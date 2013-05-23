@@ -1,0 +1,486 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D7862EB0174E741C00E59D5A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862EAF174E741C00E59D5A /* UIKit.framework */; };
+		D7862EB2174E741C00E59D5A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862EB1174E741C00E59D5A /* Foundation.framework */; };
+		D7862EB4174E741C00E59D5A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862EB3174E741C00E59D5A /* CoreGraphics.framework */; };
+		D7862EB7174E741C00E59D5A /* Podfile in Resources */ = {isa = PBXBuildFile; fileRef = D7862EB6174E741C00E59D5A /* Podfile */; };
+		D7862EBD174E741C00E59D5A /* StaffRosterAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862EBC174E741C00E59D5A /* StaffRosterAPIClient.m */; };
+		D7862EC1174E741C00E59D5A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D7862EBF174E741C00E59D5A /* InfoPlist.strings */; };
+		D7862EC3174E741C00E59D5A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862EC2174E741C00E59D5A /* main.m */; };
+		D7862EC6174E741C00E59D5A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862EC5174E741C00E59D5A /* AppDelegate.m */; };
+		D7862EC8174E741C00E59D5A /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = D7862EC7174E741C00E59D5A /* Default.png */; };
+		D7862ECA174E741C00E59D5A /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D7862EC9174E741C00E59D5A /* Default@2x.png */; };
+		D7862ECC174E741C00E59D5A /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D7862ECB174E741C00E59D5A /* Default-568h@2x.png */; };
+		D7862ED0174E741C00E59D5A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862ECF174E741C00E59D5A /* ViewController.m */; };
+		D7862ED2174E741C00E59D5A /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = D7862ED1174E741C00E59D5A /* .gitignore */; };
+		D7862EDA174E741C00E59D5A /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862ED9174E741C00E59D5A /* SenTestingKit.framework */; };
+		D7862EDB174E741C00E59D5A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862EAF174E741C00E59D5A /* UIKit.framework */; };
+		D7862EDC174E741C00E59D5A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862EB1174E741C00E59D5A /* Foundation.framework */; };
+		D7862EE4174E741C00E59D5A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D7862EE2174E741C00E59D5A /* InfoPlist.strings */; };
+		D7862EE7174E741C00E59D5A /* StaffRosterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862EE6174E741C00E59D5A /* StaffRosterTests.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D7862EDD174E741C00E59D5A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D7862EA4174E741C00E59D5A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D7862EAB174E741C00E59D5A;
+			remoteInfo = StaffRoster;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		D7862EAC174E741C00E59D5A /* StaffRoster.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StaffRoster.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7862EAF174E741C00E59D5A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		D7862EB1174E741C00E59D5A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		D7862EB3174E741C00E59D5A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		D7862EB6174E741C00E59D5A /* Podfile */ = {isa = PBXFileReference; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = "<group>"; };
+		D7862EB9174E741C00E59D5A /* StaffRoster-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "StaffRoster-Prefix.pch"; sourceTree = "<group>"; };
+		D7862EBB174E741C00E59D5A /* StaffRosterAPIClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = StaffRosterAPIClient.h; path = Classes/Networking/StaffRosterAPIClient.h; sourceTree = "<group>"; };
+		D7862EBC174E741C00E59D5A /* StaffRosterAPIClient.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = StaffRosterAPIClient.m; path = Classes/Networking/StaffRosterAPIClient.m; sourceTree = "<group>"; };
+		D7862EBE174E741C00E59D5A /* StaffRoster-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "StaffRoster-Info.plist"; sourceTree = "<group>"; };
+		D7862EC0174E741C00E59D5A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		D7862EC2174E741C00E59D5A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		D7862EC4174E741C00E59D5A /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		D7862EC5174E741C00E59D5A /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		D7862EC7174E741C00E59D5A /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
+		D7862EC9174E741C00E59D5A /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
+		D7862ECB174E741C00E59D5A /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		D7862ECE174E741C00E59D5A /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ViewController.h; path = Classes/Controllers/ViewController.h; sourceTree = "<group>"; };
+		D7862ECF174E741C00E59D5A /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = ViewController.m; path = Classes/Controllers/ViewController.m; sourceTree = "<group>"; };
+		D7862ED1174E741C00E59D5A /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		D7862ED8174E741C00E59D5A /* StaffRosterTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StaffRosterTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7862ED9174E741C00E59D5A /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		D7862EE1174E741C00E59D5A /* StaffRosterTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "StaffRosterTests-Info.plist"; sourceTree = "<group>"; };
+		D7862EE3174E741C00E59D5A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		D7862EE5174E741C00E59D5A /* StaffRosterTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StaffRosterTests.h; sourceTree = "<group>"; };
+		D7862EE6174E741C00E59D5A /* StaffRosterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StaffRosterTests.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D7862EA9174E741C00E59D5A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D7862EB0174E741C00E59D5A /* UIKit.framework in Frameworks */,
+				D7862EB2174E741C00E59D5A /* Foundation.framework in Frameworks */,
+				D7862EB4174E741C00E59D5A /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D7862ED4174E741C00E59D5A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D7862EDA174E741C00E59D5A /* SenTestingKit.framework in Frameworks */,
+				D7862EDB174E741C00E59D5A /* UIKit.framework in Frameworks */,
+				D7862EDC174E741C00E59D5A /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D7862EA3174E741C00E59D5A = {
+			isa = PBXGroup;
+			children = (
+				D7862EB5174E741C00E59D5A /* StaffRoster */,
+				D7862EDF174E741C00E59D5A /* StaffRosterTests */,
+				D7862EAE174E741C00E59D5A /* Frameworks */,
+				D7862EAD174E741C00E59D5A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D7862EAD174E741C00E59D5A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D7862EAC174E741C00E59D5A /* StaffRoster.app */,
+				D7862ED8174E741C00E59D5A /* StaffRosterTests.octest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D7862EAE174E741C00E59D5A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D7862EAF174E741C00E59D5A /* UIKit.framework */,
+				D7862EB1174E741C00E59D5A /* Foundation.framework */,
+				D7862EB3174E741C00E59D5A /* CoreGraphics.framework */,
+				D7862ED9174E741C00E59D5A /* SenTestingKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D7862EB5174E741C00E59D5A /* StaffRoster */ = {
+			isa = PBXGroup;
+			children = (
+				D7862EB6174E741C00E59D5A /* Podfile */,
+				D7862EC4174E741C00E59D5A /* AppDelegate.h */,
+				D7862EC5174E741C00E59D5A /* AppDelegate.m */,
+				D7862ED1174E741C00E59D5A /* .gitignore */,
+				D7862EBA174E741C00E59D5A /* Networking */,
+				D7862ECD174E741C00E59D5A /* Controllers */,
+				D7862EB8174E741C00E59D5A /* Supporting Files */,
+			);
+			path = StaffRoster;
+			sourceTree = "<group>";
+		};
+		D7862EB8174E741C00E59D5A /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				D7862EB9174E741C00E59D5A /* StaffRoster-Prefix.pch */,
+				D7862EBE174E741C00E59D5A /* StaffRoster-Info.plist */,
+				D7862EBF174E741C00E59D5A /* InfoPlist.strings */,
+				D7862EC2174E741C00E59D5A /* main.m */,
+				D7862EC7174E741C00E59D5A /* Default.png */,
+				D7862EC9174E741C00E59D5A /* Default@2x.png */,
+				D7862ECB174E741C00E59D5A /* Default-568h@2x.png */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		D7862EBA174E741C00E59D5A /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				D7862EBB174E741C00E59D5A /* StaffRosterAPIClient.h */,
+				D7862EBC174E741C00E59D5A /* StaffRosterAPIClient.m */,
+			);
+			name = Networking;
+			sourceTree = "<group>";
+		};
+		D7862ECD174E741C00E59D5A /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				D7862ECE174E741C00E59D5A /* ViewController.h */,
+				D7862ECF174E741C00E59D5A /* ViewController.m */,
+			);
+			name = Controllers;
+			sourceTree = "<group>";
+		};
+		D7862EDF174E741C00E59D5A /* StaffRosterTests */ = {
+			isa = PBXGroup;
+			children = (
+				D7862EE5174E741C00E59D5A /* StaffRosterTests.h */,
+				D7862EE6174E741C00E59D5A /* StaffRosterTests.m */,
+				D7862EE0174E741C00E59D5A /* Supporting Files */,
+			);
+			path = StaffRosterTests;
+			sourceTree = "<group>";
+		};
+		D7862EE0174E741C00E59D5A /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				D7862EE1174E741C00E59D5A /* StaffRosterTests-Info.plist */,
+				D7862EE2174E741C00E59D5A /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D7862EAB174E741C00E59D5A /* StaffRoster */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D7862EEA174E741C00E59D5A /* Build configuration list for PBXNativeTarget "StaffRoster" */;
+			buildPhases = (
+				D7862EA8174E741C00E59D5A /* Sources */,
+				D7862EA9174E741C00E59D5A /* Frameworks */,
+				D7862EAA174E741C00E59D5A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = StaffRoster;
+			productName = StaffRoster;
+			productReference = D7862EAC174E741C00E59D5A /* StaffRoster.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D7862ED7174E741C00E59D5A /* StaffRosterTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D7862EED174E741C00E59D5A /* Build configuration list for PBXNativeTarget "StaffRosterTests" */;
+			buildPhases = (
+				D7862ED3174E741C00E59D5A /* Sources */,
+				D7862ED4174E741C00E59D5A /* Frameworks */,
+				D7862ED5174E741C00E59D5A /* Resources */,
+				D7862ED6174E741C00E59D5A /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D7862EDE174E741C00E59D5A /* PBXTargetDependency */,
+			);
+			name = StaffRosterTests;
+			productName = StaffRosterTests;
+			productReference = D7862ED8174E741C00E59D5A /* StaffRosterTests.octest */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D7862EA4174E741C00E59D5A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0460;
+				ORGANIZATIONNAME = redhat;
+			};
+			buildConfigurationList = D7862EA7174E741C00E59D5A /* Build configuration list for PBXProject "StaffRoster" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = D7862EA3174E741C00E59D5A;
+			productRefGroup = D7862EAD174E741C00E59D5A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D7862EAB174E741C00E59D5A /* StaffRoster */,
+				D7862ED7174E741C00E59D5A /* StaffRosterTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D7862EAA174E741C00E59D5A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D7862EB7174E741C00E59D5A /* Podfile in Resources */,
+				D7862EC1174E741C00E59D5A /* InfoPlist.strings in Resources */,
+				D7862EC8174E741C00E59D5A /* Default.png in Resources */,
+				D7862ECA174E741C00E59D5A /* Default@2x.png in Resources */,
+				D7862ECC174E741C00E59D5A /* Default-568h@2x.png in Resources */,
+				D7862ED2174E741C00E59D5A /* .gitignore in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D7862ED5174E741C00E59D5A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D7862EE4174E741C00E59D5A /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D7862ED6174E741C00E59D5A /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D7862EA8174E741C00E59D5A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D7862EBD174E741C00E59D5A /* StaffRosterAPIClient.m in Sources */,
+				D7862EC3174E741C00E59D5A /* main.m in Sources */,
+				D7862EC6174E741C00E59D5A /* AppDelegate.m in Sources */,
+				D7862ED0174E741C00E59D5A /* ViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D7862ED3174E741C00E59D5A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D7862EE7174E741C00E59D5A /* StaffRosterTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D7862EDE174E741C00E59D5A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D7862EAB174E741C00E59D5A /* StaffRoster */;
+			targetProxy = D7862EDD174E741C00E59D5A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		D7862EBF174E741C00E59D5A /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				D7862EC0174E741C00E59D5A /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		D7862EE2174E741C00E59D5A /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				D7862EE3174E741C00E59D5A /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		D7862EE8174E741C00E59D5A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		D7862EE9174E741C00E59D5A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		D7862EEB174E741C00E59D5A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "StaffRoster/StaffRoster-Prefix.pch";
+				INFOPLIST_FILE = "StaffRoster/StaffRoster-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		D7862EEC174E741C00E59D5A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "StaffRoster/StaffRoster-Prefix.pch";
+				INFOPLIST_FILE = "StaffRoster/StaffRoster-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		D7862EEE174E741C00E59D5A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/StaffRoster.app/StaffRoster";
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
+					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "StaffRoster/StaffRoster-Prefix.pch";
+				INFOPLIST_FILE = "StaffRosterTests/StaffRosterTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Debug;
+		};
+		D7862EEF174E741C00E59D5A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/StaffRoster.app/StaffRoster";
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
+					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "StaffRoster/StaffRoster-Prefix.pch";
+				INFOPLIST_FILE = "StaffRosterTests/StaffRosterTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D7862EA7174E741C00E59D5A /* Build configuration list for PBXProject "StaffRoster" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D7862EE8174E741C00E59D5A /* Debug */,
+				D7862EE9174E741C00E59D5A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D7862EEA174E741C00E59D5A /* Build configuration list for PBXNativeTarget "StaffRoster" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D7862EEB174E741C00E59D5A /* Debug */,
+				D7862EEC174E741C00E59D5A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		D7862EED174E741C00E59D5A /* Build configuration list for PBXNativeTarget "StaffRosterTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D7862EEE174E741C00E59D5A /* Debug */,
+				D7862EEF174E741C00E59D5A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D7862EA4174E741C00E59D5A /* Project object */;
+}

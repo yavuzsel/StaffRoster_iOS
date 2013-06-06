@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4690D24716D84588A607B166 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B42444467B964BE49A6E6238 /* libPods.a */; };
+		D77DF282175E37D200B3BA78 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D77DF281175E37D200B3BA78 /* QuartzCore.framework */; };
 		D7862EB0174E741C00E59D5A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862EAF174E741C00E59D5A /* UIKit.framework */; };
 		D7862EB2174E741C00E59D5A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862EB1174E741C00E59D5A /* Foundation.framework */; };
 		D7862EB4174E741C00E59D5A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862EB3174E741C00E59D5A /* CoreGraphics.framework */; };
@@ -18,13 +20,14 @@
 		D7862EC8174E741C00E59D5A /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = D7862EC7174E741C00E59D5A /* Default.png */; };
 		D7862ECA174E741C00E59D5A /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D7862EC9174E741C00E59D5A /* Default@2x.png */; };
 		D7862ECC174E741C00E59D5A /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D7862ECB174E741C00E59D5A /* Default-568h@2x.png */; };
-		D7862ED0174E741C00E59D5A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862ECF174E741C00E59D5A /* ViewController.m */; };
+		D7862ED0174E741C00E59D5A /* EmployeeSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862ECF174E741C00E59D5A /* EmployeeSearchViewController.m */; };
 		D7862ED2174E741C00E59D5A /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = D7862ED1174E741C00E59D5A /* .gitignore */; };
 		D7862EDA174E741C00E59D5A /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862ED9174E741C00E59D5A /* SenTestingKit.framework */; };
 		D7862EDB174E741C00E59D5A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862EAF174E741C00E59D5A /* UIKit.framework */; };
 		D7862EDC174E741C00E59D5A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862EB1174E741C00E59D5A /* Foundation.framework */; };
 		D7862EE4174E741C00E59D5A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D7862EE2174E741C00E59D5A /* InfoPlist.strings */; };
 		D7862EE7174E741C00E59D5A /* StaffRosterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862EE6174E741C00E59D5A /* StaffRosterTests.m */; };
+		D7999CC6174EBC4800EEF930 /* StaffDetailTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D7999CC5174EBC4800EEF930 /* StaffDetailTableViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +41,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0937ADEC2B47403CBF0CD0AD /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = SOURCE_ROOT; };
+		B42444467B964BE49A6E6238 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D77DF281175E37D200B3BA78 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		D7862EAC174E741C00E59D5A /* StaffRoster.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StaffRoster.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7862EAF174E741C00E59D5A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		D7862EB1174E741C00E59D5A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -54,8 +60,8 @@
 		D7862EC7174E741C00E59D5A /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		D7862EC9174E741C00E59D5A /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		D7862ECB174E741C00E59D5A /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
-		D7862ECE174E741C00E59D5A /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ViewController.h; path = Classes/Controllers/ViewController.h; sourceTree = "<group>"; };
-		D7862ECF174E741C00E59D5A /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = ViewController.m; path = Classes/Controllers/ViewController.m; sourceTree = "<group>"; };
+		D7862ECE174E741C00E59D5A /* EmployeeSearchViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EmployeeSearchViewController.h; path = Classes/Controllers/EmployeeSearchViewController.h; sourceTree = "<group>"; };
+		D7862ECF174E741C00E59D5A /* EmployeeSearchViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = EmployeeSearchViewController.m; path = Classes/Controllers/EmployeeSearchViewController.m; sourceTree = "<group>"; };
 		D7862ED1174E741C00E59D5A /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		D7862ED8174E741C00E59D5A /* StaffRosterTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StaffRosterTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7862ED9174E741C00E59D5A /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -63,6 +69,8 @@
 		D7862EE3174E741C00E59D5A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D7862EE5174E741C00E59D5A /* StaffRosterTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StaffRosterTests.h; sourceTree = "<group>"; };
 		D7862EE6174E741C00E59D5A /* StaffRosterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StaffRosterTests.m; sourceTree = "<group>"; };
+		D7999CC4174EBC4800EEF930 /* StaffDetailTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaffDetailTableViewController.h; sourceTree = "<group>"; };
+		D7999CC5174EBC4800EEF930 /* StaffDetailTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StaffDetailTableViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,9 +78,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D77DF282175E37D200B3BA78 /* QuartzCore.framework in Frameworks */,
 				D7862EB0174E741C00E59D5A /* UIKit.framework in Frameworks */,
 				D7862EB2174E741C00E59D5A /* Foundation.framework in Frameworks */,
 				D7862EB4174E741C00E59D5A /* CoreGraphics.framework in Frameworks */,
+				4690D24716D84588A607B166 /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,10 +102,11 @@
 		D7862EA3174E741C00E59D5A = {
 			isa = PBXGroup;
 			children = (
+				D77DF281175E37D200B3BA78 /* QuartzCore.framework */,
 				D7862EB5174E741C00E59D5A /* StaffRoster */,
 				D7862EDF174E741C00E59D5A /* StaffRosterTests */,
 				D7862EAE174E741C00E59D5A /* Frameworks */,
-				D7862EAD174E741C00E59D5A /* Products */,
+				0937ADEC2B47403CBF0CD0AD /* Pods.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -106,6 +117,7 @@
 				D7862ED8174E741C00E59D5A /* StaffRosterTests.octest */,
 			);
 			name = Products;
+			path = ..;
 			sourceTree = "<group>";
 		};
 		D7862EAE174E741C00E59D5A /* Frameworks */ = {
@@ -115,6 +127,7 @@
 				D7862EB1174E741C00E59D5A /* Foundation.framework */,
 				D7862EB3174E741C00E59D5A /* CoreGraphics.framework */,
 				D7862ED9174E741C00E59D5A /* SenTestingKit.framework */,
+				B42444467B964BE49A6E6238 /* libPods.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -159,8 +172,10 @@
 		D7862ECD174E741C00E59D5A /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				D7862ECE174E741C00E59D5A /* ViewController.h */,
-				D7862ECF174E741C00E59D5A /* ViewController.m */,
+				D7862ECE174E741C00E59D5A /* EmployeeSearchViewController.h */,
+				D7862ECF174E741C00E59D5A /* EmployeeSearchViewController.m */,
+				D7999CC4174EBC4800EEF930 /* StaffDetailTableViewController.h */,
+				D7999CC5174EBC4800EEF930 /* StaffDetailTableViewController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -168,6 +183,7 @@
 		D7862EDF174E741C00E59D5A /* StaffRosterTests */ = {
 			isa = PBXGroup;
 			children = (
+				D7862EAD174E741C00E59D5A /* Products */,
 				D7862EE5174E741C00E59D5A /* StaffRosterTests.h */,
 				D7862EE6174E741C00E59D5A /* StaffRosterTests.m */,
 				D7862EE0174E741C00E59D5A /* Supporting Files */,
@@ -191,9 +207,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D7862EEA174E741C00E59D5A /* Build configuration list for PBXNativeTarget "StaffRoster" */;
 			buildPhases = (
+				8409F70DACDD4E58812A083E /* Check Pods Manifest.lock */,
 				D7862EA8174E741C00E59D5A /* Sources */,
 				D7862EA9174E741C00E59D5A /* Frameworks */,
 				D7862EAA174E741C00E59D5A /* Resources */,
+				4799D09716ED4568BFF84F0F /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -275,6 +293,34 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		4799D09716ED4568BFF84F0F /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+		};
+		8409F70DACDD4E58812A083E /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+		};
 		D7862ED6174E741C00E59D5A /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -298,7 +344,8 @@
 				D7862EBD174E741C00E59D5A /* StaffRosterAPIClient.m in Sources */,
 				D7862EC3174E741C00E59D5A /* main.m in Sources */,
 				D7862EC6174E741C00E59D5A /* AppDelegate.m in Sources */,
-				D7862ED0174E741C00E59D5A /* ViewController.m in Sources */,
+				D7862ED0174E741C00E59D5A /* EmployeeSearchViewController.m in Sources */,
+				D7999CC6174EBC4800EEF930 /* StaffDetailTableViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -398,22 +445,34 @@
 		};
 		D7862EEB174E741C00E59D5A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0937ADEC2B47403CBF0CD0AD /* Pods.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "StaffRoster/StaffRoster-Prefix.pch";
 				INFOPLIST_FILE = "StaffRoster/StaffRoster-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
 		};
 		D7862EEC174E741C00E59D5A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0937ADEC2B47403CBF0CD0AD /* Pods.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "StaffRoster/StaffRoster-Prefix.pch";
 				INFOPLIST_FILE = "StaffRoster/StaffRoster-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -471,6 +530,7 @@
 				D7862EEC174E741C00E59D5A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		D7862EED174E741C00E59D5A /* Build configuration list for PBXNativeTarget "StaffRosterTests" */ = {
 			isa = XCConfigurationList;
@@ -479,6 +539,7 @@
 				D7862EEF174E741C00E59D5A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

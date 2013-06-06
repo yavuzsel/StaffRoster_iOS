@@ -8,7 +8,13 @@
 
 @interface StaffRosterAPIClient : NSObject
 
-@property(readonly, nonatomic) id<AGPipe> tasksPipe;
+@property(readonly, nonatomic) id<AGPipe> employeesPipe;
+
+@property(readonly, nonatomic) id<AGPipe> managerPipe;
+
+@property(readonly, nonatomic) id<AGPipe> colleaguesPipe;
+
+@property(readonly, nonatomic) id<AGPipe> dreportsPipe;
 
 + (StaffRosterAPIClient *)sharedInstance;
 @end

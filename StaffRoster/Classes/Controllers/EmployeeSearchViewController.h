@@ -6,6 +6,9 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ViewController : UITableViewController
+@interface EmployeeSearchViewController : UITableViewController <UISearchBarDelegate>
+
+@property NSArray *employees;
+@property bool load_with_no_search_bar;
 
 @end

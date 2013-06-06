@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 redhat. All rights reserved.
 //
 
-#import "ViewController.h"
+#import "EmployeeSearchViewController.h"
 #import "AppDelegate.h"
 
 @implementation AppDelegate
@@ -16,8 +16,9 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     
-    UIViewController *viewController = [[ViewController alloc] initWithStyle:UITableViewStylePlain];
+    UIViewController *viewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
     self.navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
+    self.navigationController.navigationBarHidden = YES;
 
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.rootViewController = self.navigationController;

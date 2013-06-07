@@ -6,7 +6,7 @@
 
 #import "StaffRosterAPIClient.h"
 
-static NSString * const kStaffRosterAPIBaseURLString = @"http://10.193.20.97/aerogear/";
+static NSString * const kStaffRosterAPIBaseURLString = @"http://localhost/aerogear/";
 
 @implementation StaffRosterAPIClient
 

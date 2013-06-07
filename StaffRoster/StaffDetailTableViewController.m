@@ -17,6 +17,7 @@
 @implementation StaffDetailTableViewController {
     NSArray *_response_employee;
     bool _load_mutex;
+    NSInteger numOfDreports;
 }
 
 @synthesize person;
@@ -35,6 +36,7 @@
     [super viewDidLoad];
     
     _load_mutex = true;
+    numOfDreports = 0;
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(popToRoot:)];
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
@@ -68,9 +70,23 @@
     [fingerSwipeDown setNumberOfTouchesRequired:2];
     [fingerSwipeDown setDirection:UISwipeGestureRecognizerDirectionLeft];
     [[self view] addGestureRecognizer:fingerSwipeDown];
+    
+    
+    // load number of direct reports, no need to hold lock
+    [self loadNumberOfDReports];
 }
 
--(IBAction)popToRoot:(id)sender {
+- (void)loadNumberOfDReports {
+    [[StaffRosterAPIClient sharedInstance].dreportsPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"dreport": [person objectForKey:@"cn"], @"count":@"req"}] success:^(id responseObject) {
+        NSLog(@"Response dreports count: %@", responseObject);
+        numOfDreports = ([[responseObject objectAtIndex:0] objectForKey:@"count"] != [NSNull null])?[[[responseObject objectAtIndex:0] objectForKey:@"count"] integerValue]:0;
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
+    } failure:^(NSError *error) {
+        NSLog(@"An error has occured during read! \n%@", error);
+    }];
+}
+
+- (IBAction)popToRoot:(id)sender {
     [self.navigationController popToRootViewControllerAnimated:YES];
 }
 
@@ -175,6 +191,13 @@
                              }];*/
             [self.navigationController pushViewController:detailViewController animated:NO];
             _load_mutex = true;
+        } else {
+            UIAlertView *message = [[UIAlertView alloc] initWithTitle:@"Oops!"
+                                                              message:@"No manager found..."
+                                                             delegate:nil
+                                                    cancelButtonTitle:@"OK"
+                                                    otherButtonTitles:nil];
+            [message show];
         }
         
     } failure:^(NSError *error) {
@@ -204,6 +227,8 @@
                                                     forKey:kCATransition];
         EmployeeSearchViewController *detailViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
         detailViewController.employees = responseObject;
+        detailViewController.titleName = [person objectForKey:@"cn"];
+        detailViewController.pageType = kEmployeeSearchViewPageTypeColleagues;
         detailViewController.load_with_no_search_bar = true;
         [self.navigationController pushViewController:detailViewController animated:NO];
         _load_mutex = true;
@@ -234,6 +259,8 @@
                                                     forKey:kCATransition];
         EmployeeSearchViewController *detailViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
         detailViewController.employees = responseObject;
+        detailViewController.titleName = [person objectForKey:@"cn"];
+        detailViewController.pageType = kEmployeeSearchViewPageTypeDReports;
         detailViewController.load_with_no_search_bar = true;
         /*[UIView animateWithDuration:0.75
                          animations:^{
@@ -261,13 +288,20 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     // Return the number of sections.
-    return 3;
+    return ([person objectForKey:@"telephonenumber"] != [NSNull null])?(([person objectForKey:@"title"] != [NSNull null])?5:4):(([person objectForKey:@"title"] != [NSNull null])?4:3);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     // Return the number of rows in the section.
     return 1;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
+    if (section == 0 && numOfDreports > 0) {
+        return [[NSString alloc] initWithFormat:@"%d direct reports", numOfDreports];
+    }
+    return nil;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -277,11 +311,19 @@
             break;
             
         case 1:
-            return @"Location:";
+            return ([person objectForKey:@"title"] != [NSNull null])?@"Title:":@"Location:";
             break;
             
         case 2:
-            return @"e-Mail:";
+            return ([person objectForKey:@"title"] != [NSNull null])?@"Location:":@"e-Mail:";
+            break;
+            
+        case 3:
+            return ([person objectForKey:@"title"] != [NSNull null])?@"e-Mail:":@"Phone:";
+            break;
+            
+        case 4:
+            return @"Phone:";
             break;
             
         default:
@@ -318,11 +360,19 @@
             break;
             
         case 1:
-            cell.textLabel.text =  [person objectForKey:@"rhatlocation"];
+            cell.textLabel.text =  ([person objectForKey:@"title"] != [NSNull null])?[person objectForKey:@"title"]:[person objectForKey:@"rhatlocation"];
             break;
             
         case 2:
-            cell.textLabel.text =  [person objectForKey:@"mail"];
+            cell.textLabel.text =  ([person objectForKey:@"title"] != [NSNull null])?[person objectForKey:@"rhatlocation"]:[person objectForKey:@"mail"];
+            break;
+            
+        case 3:
+            cell.textLabel.text =  ([person objectForKey:@"title"] != [NSNull null])?[person objectForKey:@"mail"]:[person objectForKey:@"telephonenumber"];
+            break;
+            
+        case 4:
+            cell.textLabel.text =  [person objectForKey:@"telephonenumber"];
             break;
             
         default:

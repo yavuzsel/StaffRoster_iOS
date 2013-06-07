@@ -8,7 +8,15 @@
 
 @interface EmployeeSearchViewController : UITableViewController <UISearchBarDelegate>
 
+typedef enum {
+    kEmployeeSearchViewPageTypeSearch,
+    kEmployeeSearchViewPageTypeColleagues,
+    kEmployeeSearchViewPageTypeDReports
+} EmployeeSearchViewPageType;
+
+@property EmployeeSearchViewPageType pageType;
 @property NSArray *employees;
 @property bool load_with_no_search_bar;
+@property NSString *titleName;
 
 @end

@@ -16,7 +16,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     
-    UIViewController *viewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    EmployeeSearchViewController *viewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    viewController.pageType = kEmployeeSearchViewPageTypeSearch;
     self.navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
     self.navigationController.navigationBarHidden = YES;
 

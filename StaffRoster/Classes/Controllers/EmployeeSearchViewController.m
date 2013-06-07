@@ -15,10 +15,37 @@
 
 @synthesize employees = _employees;
 @synthesize load_with_no_search_bar = _load_with_no_search_bar;
+@synthesize pageType = _pageType;
+@synthesize titleName = _titleName;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(popToRoot:)];
+    
+    if (!_pageType) {
+        // default to search page
+        _pageType = kEmployeeSearchViewPageTypeSearch;
+    }
+    
+    // set title according to page type and corresponding employee name (_titleName)
+    NSString *titleText;
+    switch (_pageType) {
+        case kEmployeeSearchViewPageTypeSearch:
+            // no visible title bar
+            break;
+            
+        case kEmployeeSearchViewPageTypeColleagues:
+            titleText = [[NSString alloc] initWithFormat:@"%@'s Colleagues", ([_titleName length]<7)?_titleName:[[_titleName componentsSeparatedByString:@" "] objectAtIndex:0]];
+            break;
+            
+        case kEmployeeSearchViewPageTypeDReports:
+            titleText = [[NSString alloc] initWithFormat:@"%@'s Direct Reports", ([_titleName length]<7)?_titleName:[[_titleName componentsSeparatedByString:@" "] objectAtIndex:0]];
+            break;
+            
+        default:
+            break;
+    }
+    self.navigationItem.title = titleText;
     
     _load_mutex = true;
     if (_load_with_no_search_bar) {
@@ -26,6 +53,7 @@
     }
     _searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0.0, 0.0, 320, self.tableView.rowHeight)];
     _searchBar.delegate = self;
+    _searchBar.placeholder = @"search employees";
 	self.tableView.tableHeaderView = _searchBar;
 }
 
@@ -37,7 +65,7 @@
     }
 }
 
--(IBAction)popToRoot:(id)sender {
+- (IBAction)popToRoot:(id)sender {
     [self.navigationController popToRootViewControllerAnimated:YES];
 }
 
@@ -100,16 +128,69 @@
     NSUInteger row = [indexPath row];
     
     if (![_employees count]) {
-        cell.textLabel.text = @"No result";
+        switch (_pageType) {
+            case kEmployeeSearchViewPageTypeSearch:
+                cell.textLabel.text = @"Search for Employees";
+                break;
+                
+            case kEmployeeSearchViewPageTypeColleagues:
+                cell.textLabel.text = @"No Colleagues";
+                break;
+                
+            case kEmployeeSearchViewPageTypeDReports:
+                cell.textLabel.text = @"No Direct Reports";
+                break;
+                
+            default:
+                cell.textLabel.text = nil;
+                break;
+        }
+        
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.accessoryType = UITableViewCellAccessoryNone;
         return cell;
     }
     
     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
     
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    
     cell.textLabel.text = [[_employees objectAtIndex:row] objectForKey:@"cn"];
     
     return cell;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
+    if (_pageType == kEmployeeSearchViewPageTypeDReports) {
+        if ([_employees count]) {
+            NSMutableDictionary *locationDict = [[NSMutableDictionary alloc] init];
+            NSMutableDictionary *titleDict = [[NSMutableDictionary alloc] init];
+            for (int i=0; i<[_employees count]; i++) {
+                if ([locationDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]]) {
+                    [locationDict setObject:[NSNumber numberWithInteger:[[locationDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]] integerValue]+1] forKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]];
+                } else {
+                    [locationDict setObject:[NSNumber numberWithInteger:1] forKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]];
+                }
+                if ([[_employees objectAtIndex:i] objectForKey:@"title"] != [NSNull null]) {
+                    if ([titleDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"title"]]) {
+                        [titleDict setObject:[NSNumber numberWithInteger:[[titleDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"title"]] integerValue]+1] forKey:[[_employees objectAtIndex:i] objectForKey:@"title"]];
+                    } else {
+                        [titleDict setObject:[NSNumber numberWithInteger:1] forKey:[[_employees objectAtIndex:i] objectForKey:@"title"]];
+                    }
+                }
+            }
+            NSMutableString *statsStr = [[NSMutableString alloc] initWithString:@"\nDirect Reports From:\n\n"];
+            for (id key in locationDict) {
+                [statsStr appendFormat:@"%@ => %@\n\n", [locationDict objectForKey:key], key];
+            }
+            [statsStr appendString:@"\n\nDirect Reports Titles:\n\n"];
+            for (id key in titleDict) {
+                [statsStr appendFormat:@"%@ => %@\n\n", [titleDict objectForKey:key], key];
+            }
+            return statsStr;
+        }
+    }
+    return nil;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {

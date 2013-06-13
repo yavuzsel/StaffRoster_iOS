@@ -29,6 +29,7 @@
 		D7862EE4174E741C00E59D5A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D7862EE2174E741C00E59D5A /* InfoPlist.strings */; };
 		D7862EE7174E741C00E59D5A /* StaffRosterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862EE6174E741C00E59D5A /* StaffRosterTests.m */; };
 		D7999CC6174EBC4800EEF930 /* StaffDetailTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D7999CC5174EBC4800EEF930 /* StaffDetailTableViewController.m */; };
+		D7BE599F17690189007F2C20 /* OfflineDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = D7BE599E17690189007F2C20 /* OfflineDataProvider.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +74,9 @@
 		D7862EE6174E741C00E59D5A /* StaffRosterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StaffRosterTests.m; sourceTree = "<group>"; };
 		D7999CC4174EBC4800EEF930 /* StaffDetailTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaffDetailTableViewController.h; sourceTree = "<group>"; };
 		D7999CC5174EBC4800EEF930 /* StaffDetailTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StaffDetailTableViewController.m; sourceTree = "<group>"; };
+		D7BE599D17690189007F2C20 /* OfflineDataProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OfflineDataProvider.h; path = Classes/DataProviders/OfflineDataProvider.h; sourceTree = "<group>"; };
+		D7BE599E17690189007F2C20 /* OfflineDataProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OfflineDataProvider.m; path = Classes/DataProviders/OfflineDataProvider.m; sourceTree = "<group>"; };
+		D7BE59A2176A1A81007F2C20 /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,7 +145,9 @@
 				D7862EB6174E741C00E59D5A /* Podfile */,
 				D7862EC4174E741C00E59D5A /* AppDelegate.h */,
 				D7862EC5174E741C00E59D5A /* AppDelegate.m */,
+				D7BE59A2176A1A81007F2C20 /* Constants.h */,
 				D7862ED1174E741C00E59D5A /* .gitignore */,
+				D7BE599C17690162007F2C20 /* DataProviders */,
 				D7862EBA174E741C00E59D5A /* Networking */,
 				D7862ECD174E741C00E59D5A /* Controllers */,
 				D7862EB8174E741C00E59D5A /* Supporting Files */,
@@ -201,6 +207,15 @@
 				D7862EE2174E741C00E59D5A /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		D7BE599C17690162007F2C20 /* DataProviders */ = {
+			isa = PBXGroup;
+			children = (
+				D7BE599D17690189007F2C20 /* OfflineDataProvider.h */,
+				D7BE599E17690189007F2C20 /* OfflineDataProvider.m */,
+			);
+			name = DataProviders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -350,6 +365,7 @@
 				D7862EC6174E741C00E59D5A /* AppDelegate.m in Sources */,
 				D7862ED0174E741C00E59D5A /* EmployeeSearchViewController.m in Sources */,
 				D7999CC6174EBC4800EEF930 /* StaffDetailTableViewController.m in Sources */,
+				D7BE599F17690189007F2C20 /* OfflineDataProvider.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -460,6 +476,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -477,6 +494,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

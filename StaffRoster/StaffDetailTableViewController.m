@@ -9,18 +9,18 @@
 #import "StaffDetailTableViewController.h"
 #import "StaffRosterAPIClient.h"
 #import "EmployeeSearchViewController.h"
+#import "OfflineDataProvider.h"
 
 @interface StaffDetailTableViewController ()
 
 @end
 
 @implementation StaffDetailTableViewController {
-    NSArray *_response_employee;
     bool _load_mutex;
-    NSInteger numOfDreports;
+    NSInteger _num_of_dreports;
 }
 
-@synthesize person;
+@synthesize employee = _employee;
 
 - (id)initWithStyle:(UITableViewStyle)style
 {
@@ -36,7 +36,7 @@
     [super viewDidLoad];
     
     _load_mutex = true;
-    numOfDreports = 0;
+    _num_of_dreports = 0;
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(popToRoot:)];
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
@@ -60,7 +60,7 @@
                                                  initWithTarget:self
                                                  action:@selector(fingerSwipeUp:)];
     [fingerSwipeUp setNumberOfTouchesRequired:2];
-    [fingerSwipeUp setDirection:UISwipeGestureRecognizerDirectionRight];
+    [fingerSwipeUp setDirection:UISwipeGestureRecognizerDirectionRight]; // i know this is right although name says up :)
     [[self view] addGestureRecognizer:fingerSwipeUp];
     
     
@@ -68,7 +68,7 @@
                                                  initWithTarget:self
                                                  action:@selector(fingerSwipeDown:)];
     [fingerSwipeDown setNumberOfTouchesRequired:2];
-    [fingerSwipeDown setDirection:UISwipeGestureRecognizerDirectionLeft];
+    [fingerSwipeDown setDirection:UISwipeGestureRecognizerDirectionLeft]; // i know this is left although name says down :)
     [[self view] addGestureRecognizer:fingerSwipeDown];
     
     
@@ -77,13 +77,19 @@
 }
 
 - (void)loadNumberOfDReports {
-    [[StaffRosterAPIClient sharedInstance].dreportsPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"dreport": [person objectForKey:@"cn"], @"count":@"req"}] success:^(id responseObject) {
+    [[StaffRosterAPIClient sharedInstance].dreportsPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"dreport": [_employee objectForKey:@"cn"], @"count":@"req"}] success:^(id responseObject) {
         NSLog(@"Response dreports count: %@", responseObject);
-        numOfDreports = ([[responseObject objectAtIndex:0] objectForKey:@"count"] != [NSNull null])?[[[responseObject objectAtIndex:0] objectForKey:@"count"] integerValue]:0;
-        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
+        _num_of_dreports = ([[responseObject objectAtIndex:0] objectForKey:@"count"] != [NSNull null])?[[[responseObject objectAtIndex:0] objectForKey:@"count"] integerValue]:0;
+        [self respondToNumberOfDReportsLoad];
     } failure:^(NSError *error) {
         NSLog(@"An error has occured during read! \n%@", error);
+        _num_of_dreports = [OfflineDataProvider getDReportsCount:[_employee objectForKey:@"cn"]];
+        [self respondToNumberOfDReportsLoad];
     }];
+}
+
+- (void)respondToNumberOfDReportsLoad {
+    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
 }
 
 - (IBAction)popToRoot:(id)sender {
@@ -92,6 +98,7 @@
 
 - (void)fingerSwipeLeft:(UITapGestureRecognizer *)recognizer {
     // Insert your own code to handle swipe left
+    // this is needed only if i register same event for more than one gesture recognizer (i.e. for different number of touches required)
     NSUInteger touches = recognizer.numberOfTouches;
     switch (touches) {
         case 1:
@@ -108,7 +115,7 @@
 }
 
 - (void)fingerSwipeRight:(UITapGestureRecognizer *)recognizer {
-    // Insert your own code to handle swipe left
+    // Insert your own code to handle swipe right
     NSUInteger touches = recognizer.numberOfTouches;
     switch (touches) {
         case 1:
@@ -125,7 +132,7 @@
 }
 
 - (void)fingerSwipeUp:(UITapGestureRecognizer *)recognizer {
-    // Insert your own code to handle swipe left
+    // Insert your own code to handle swipe up
     NSUInteger touches = recognizer.numberOfTouches;
     switch (touches) {
         case 1:
@@ -142,7 +149,7 @@
 }
 
 - (void)fingerSwipeDown:(UITapGestureRecognizer *)recognizer {
-    // Insert your own code to handle swipe left
+    // Insert your own code to handle swipe down
     NSUInteger touches = recognizer.numberOfTouches;
     switch (touches) {
         case 1:
@@ -163,48 +170,44 @@
         return;
     }
     _load_mutex = false;
-    if (!person) {
+    if (!_employee) {
         _load_mutex = true;
         return;
     }
     // fetch the data
-    [[StaffRosterAPIClient sharedInstance].managerPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"manager": [person objectForKey:@"cn"]}] success:^(id responseObject) {
-        _response_employee = responseObject;
-        NSLog(@"Response manager: %@", _response_employee);
-        // update table with the newly fetched data
-        if ([_response_employee count]) {
-            CATransition* transition = [CATransition animation];
-            transition.duration = 0.4f;
-            transition.type = kCATransitionMoveIn;
-            transition.subtype = kCATransitionFromBottom;
-            [self.navigationController.view.layer addAnimation:transition
-                                                        forKey:kCATransition];
-            
-            StaffDetailTableViewController *detailViewController = [[StaffDetailTableViewController alloc] initWithStyle:UITableViewStyleGrouped];
-            detailViewController.person = [_response_employee objectAtIndex:0];
-            
-            /*[UIView animateWithDuration:0.75
-                             animations:^{
-                                 [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-                                 [self.navigationController pushViewController:detailViewController animated:NO];
-                                 [UIView setAnimationTransition:UIViewAnimationTransitionCurlDown forView:self.navigationController.view cache:NO];
-                             }];*/
-            [self.navigationController pushViewController:detailViewController animated:NO];
-            _load_mutex = true;
-        } else {
-            UIAlertView *message = [[UIAlertView alloc] initWithTitle:@"Oops!"
-                                                              message:@"No manager found..."
-                                                             delegate:nil
-                                                    cancelButtonTitle:@"OK"
-                                                    otherButtonTitles:nil];
-            [message show];
-        }
-        
+    [[StaffRosterAPIClient sharedInstance].managerPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"manager": [_employee objectForKey:@"cn"]}] success:^(id responseObject) {
+        [self respondToManagerLoad:responseObject];
     } failure:^(NSError *error) {
         NSLog(@"An error has occured during read! \n%@", error);
-        _load_mutex = true;
+        [self respondToManagerLoad:[OfflineDataProvider getManager:[_employee objectForKey:@"cn"]]];
     }];
 
+}
+
+- (void)respondToManagerLoad:(id)responseEmployee {
+    NSLog(@"Response manager: %@", responseEmployee);
+    // update table with the newly fetched data
+    if ([responseEmployee count]) {
+        CATransition* transition = [CATransition animation];
+        transition.duration = 0.4f;
+        transition.type = kCATransitionMoveIn;
+        transition.subtype = kCATransitionFromBottom;
+        [self.navigationController.view.layer addAnimation:transition
+                                                    forKey:kCATransition];
+        
+        StaffDetailTableViewController *detailViewController = [[StaffDetailTableViewController alloc] initWithStyle:UITableViewStyleGrouped];
+        detailViewController.employee = [responseEmployee objectAtIndex:0];
+        [self.navigationController pushViewController:detailViewController animated:NO];
+        _load_mutex = true;
+    } else {
+        UIAlertView *message = [[UIAlertView alloc] initWithTitle:@"Oops!"
+                                                          message:@"No manager found..."
+                                                         delegate:nil
+                                                cancelButtonTitle:@"OK"
+                                                otherButtonTitles:nil];
+        [message show];
+        _load_mutex = true;
+    }
 }
 
 - (void)loadColleagues:(NSString *)subtype {
@@ -212,31 +215,34 @@
         return;
     }
     _load_mutex = false;
-    if (!person) {
+    if (!_employee) {
         _load_mutex = true;
         return;
     }
     // fetch the data
-    [[StaffRosterAPIClient sharedInstance].colleaguesPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"colleague": [person objectForKey:@"cn"]}] success:^(id responseObject) {
-        NSLog(@"Response colleagues: %@", responseObject);
-        CATransition* transition = [CATransition animation];
-        transition.duration = 0.4f;
-        transition.type = kCATransitionReveal;
-        transition.subtype = subtype;
-        [self.navigationController.view.layer addAnimation:transition
-                                                    forKey:kCATransition];
-        EmployeeSearchViewController *detailViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
-        detailViewController.employees = responseObject;
-        detailViewController.titleName = [person objectForKey:@"cn"];
-        detailViewController.pageType = kEmployeeSearchViewPageTypeColleagues;
-        detailViewController.load_with_no_search_bar = true;
-        [self.navigationController pushViewController:detailViewController animated:NO];
-        _load_mutex = true;
+    [[StaffRosterAPIClient sharedInstance].colleaguesPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"colleague": [_employee objectForKey:@"cn"]}] success:^(id responseObject) {
+        [self respondToColleaguesLoad:responseObject withSubtype:subtype];
     } failure:^(NSError *error) {
         NSLog(@"An error has occured during read! \n%@", error);
-        _load_mutex = true;
+        [self respondToColleaguesLoad:[OfflineDataProvider getColleagues:[_employee objectForKey:@"cn"]] withSubtype:subtype];
     }];
     
+}
+
+- (void)respondToColleaguesLoad:(id)responseObject withSubtype:(NSString *)subtype {
+    NSLog(@"Response colleagues: %@", responseObject);
+    CATransition* transition = [CATransition animation];
+    transition.duration = 0.4f;
+    transition.type = kCATransitionReveal;
+    transition.subtype = subtype;
+    [self.navigationController.view.layer addAnimation:transition
+                                                forKey:kCATransition];
+    EmployeeSearchViewController *detailViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    detailViewController.employees = responseObject;
+    detailViewController.titleName = [_employee objectForKey:@"cn"];
+    detailViewController.pageType = kEmployeeSearchViewPageTypeColleagues;
+    [self.navigationController pushViewController:detailViewController animated:NO];
+    _load_mutex = true;
 }
 
 - (void)loadDReports {
@@ -244,37 +250,40 @@
         return;
     }
     _load_mutex = false;
-    if (!person) {
+    if (!_employee) {
         _load_mutex = true;
         return;
     }
     // fetch the data
-    [[StaffRosterAPIClient sharedInstance].dreportsPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"dreport": [person objectForKey:@"cn"]}] success:^(id responseObject) {
-        NSLog(@"Response dreports: %@", responseObject);
-        CATransition* transition = [CATransition animation];
-        transition.duration = 0.4f;
-        transition.type = kCATransitionMoveIn;
-        transition.subtype = kCATransitionFromTop;
-        [self.navigationController.view.layer addAnimation:transition
-                                                    forKey:kCATransition];
-        EmployeeSearchViewController *detailViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
-        detailViewController.employees = responseObject;
-        detailViewController.titleName = [person objectForKey:@"cn"];
-        detailViewController.pageType = kEmployeeSearchViewPageTypeDReports;
-        detailViewController.load_with_no_search_bar = true;
-        /*[UIView animateWithDuration:0.75
-                         animations:^{
-                             [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-                             [self.navigationController pushViewController:detailViewController animated:NO];
-                             [UIView setAnimationTransition:UIViewAnimationTransitionCurlUp forView:self.navigationController.view cache:NO];
-                         }];*/
-        [self.navigationController pushViewController:detailViewController animated:NO];
-        _load_mutex = true;
+    [[StaffRosterAPIClient sharedInstance].dreportsPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"dreport": [_employee objectForKey:@"cn"]}] success:^(id responseObject) {
+        [self respondToDReportsLoad:responseObject];
     } failure:^(NSError *error) {
         NSLog(@"An error has occured during read! \n%@", error);
-        _load_mutex = true;
+        [self respondToDReportsLoad:[OfflineDataProvider getDReports:[_employee objectForKey:@"cn"]]];
     }];
     
+}
+
+- (void)respondToDReportsLoad:(id)responseObject {
+    NSLog(@"Response dreports: %@", responseObject);
+    CATransition* transition = [CATransition animation];
+    transition.duration = 0.4f;
+    transition.type = kCATransitionMoveIn;
+    transition.subtype = kCATransitionFromTop;
+    [self.navigationController.view.layer addAnimation:transition
+                                                forKey:kCATransition];
+    EmployeeSearchViewController *detailViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    detailViewController.employees = responseObject;
+    detailViewController.titleName = [_employee objectForKey:@"cn"];
+    detailViewController.pageType = kEmployeeSearchViewPageTypeDReports;
+    /*[UIView animateWithDuration:0.75
+     animations:^{
+     [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+     [self.navigationController pushViewController:detailViewController animated:NO];
+     [UIView setAnimationTransition:UIViewAnimationTransitionCurlUp forView:self.navigationController.view cache:NO];
+     }];*/
+    [self.navigationController pushViewController:detailViewController animated:NO];
+    _load_mutex = true;
 }
 
 - (void)didReceiveMemoryWarning
@@ -288,7 +297,7 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     // Return the number of sections.
-    return ([person objectForKey:@"telephonenumber"] != [NSNull null])?(([person objectForKey:@"title"] != [NSNull null])?5:4):(([person objectForKey:@"title"] != [NSNull null])?4:3);
+    return ([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length])?(([_employee objectForKey:@"title"] != [NSNull null] && [[_employee objectForKey:@"title"] length])?5:4):(([_employee objectForKey:@"title"] != [NSNull null])?4:3);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -298,8 +307,8 @@
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
-    if (section == 0 && numOfDreports > 0) {
-        return [[NSString alloc] initWithFormat:@"%d direct reports", numOfDreports];
+    if (section == 0 && _num_of_dreports > 0) {
+        return [[NSString alloc] initWithFormat:@"%d direct reports", _num_of_dreports];
     }
     return nil;
 }
@@ -311,15 +320,15 @@
             break;
             
         case 1:
-            return ([person objectForKey:@"title"] != [NSNull null])?@"Title:":@"Location:";
+            return ([_employee objectForKey:@"title"] != [NSNull null] && [[_employee objectForKey:@"title"] length])?@"Title:":@"Location:";
             break;
             
         case 2:
-            return ([person objectForKey:@"title"] != [NSNull null])?@"Location:":@"e-Mail:";
+            return ([_employee objectForKey:@"title"] != [NSNull null] && [[_employee objectForKey:@"title"] length])?@"Location:":@"e-Mail:";
             break;
             
         case 3:
-            return ([person objectForKey:@"title"] != [NSNull null])?@"e-Mail:":@"Phone:";
+            return ([_employee objectForKey:@"title"] != [NSNull null] && [[_employee objectForKey:@"title"] length])?@"e-Mail:":@"Phone:";
             break;
             
         case 4:
@@ -349,30 +358,30 @@
     // Configure the cell...
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     
-    if (!person) {
+    if (!_employee) {
         cell.textLabel.text = @"ERROR";
         return cell;
     }
     
     switch (indexPath.section) {
         case 0:
-            cell.textLabel.text =  [person objectForKey:@"cn"];
+            cell.textLabel.text =  [_employee objectForKey:@"cn"];
             break;
             
         case 1:
-            cell.textLabel.text =  ([person objectForKey:@"title"] != [NSNull null])?[person objectForKey:@"title"]:[person objectForKey:@"rhatlocation"];
+            cell.textLabel.text =  ([_employee objectForKey:@"title"] != [NSNull null] && [[_employee objectForKey:@"title"] length])?[_employee objectForKey:@"title"]:[_employee objectForKey:@"rhatlocation"];
             break;
             
         case 2:
-            cell.textLabel.text =  ([person objectForKey:@"title"] != [NSNull null])?[person objectForKey:@"rhatlocation"]:[person objectForKey:@"mail"];
+            cell.textLabel.text =  ([_employee objectForKey:@"title"] != [NSNull null] && [[_employee objectForKey:@"title"] length])?[_employee objectForKey:@"rhatlocation"]:[_employee objectForKey:@"mail"];
             break;
             
         case 3:
-            cell.textLabel.text =  ([person objectForKey:@"title"] != [NSNull null])?[person objectForKey:@"mail"]:[person objectForKey:@"telephonenumber"];
+            cell.textLabel.text =  ([_employee objectForKey:@"title"] != [NSNull null] && [[_employee objectForKey:@"title"] length])?[_employee objectForKey:@"mail"]:[_employee objectForKey:@"telephonenumber"];
             break;
             
         case 4:
-            cell.textLabel.text =  [person objectForKey:@"telephonenumber"];
+            cell.textLabel.text =  [_employee objectForKey:@"telephonenumber"];
             break;
             
         default:

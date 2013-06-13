@@ -7,6 +7,7 @@
 #import "EmployeeSearchViewController.h"
 #import "StaffRosterAPIClient.h"
 #import "StaffDetailTableViewController.h"
+#import "OfflineDataProvider.h"
 
 @implementation EmployeeSearchViewController {
     UISearchBar *_searchBar;
@@ -14,7 +15,6 @@
 }
 
 @synthesize employees = _employees;
-@synthesize load_with_no_search_bar = _load_with_no_search_bar;
 @synthesize pageType = _pageType;
 @synthesize titleName = _titleName;
 
@@ -48,17 +48,17 @@
     self.navigationItem.title = titleText;
     
     _load_mutex = true;
-    if (_load_with_no_search_bar) {
+    if (_pageType != kEmployeeSearchViewPageTypeSearch) {
         return;
     }
-    _searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0.0, 0.0, 320, self.tableView.rowHeight)];
+    _searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0.0, 0.0, [[UIScreen mainScreen] bounds].size.width, self.tableView.rowHeight)];
     _searchBar.delegate = self;
     _searchBar.placeholder = @"search employees";
 	self.tableView.tableHeaderView = _searchBar;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    if (_load_with_no_search_bar) {
+    if (_pageType != kEmployeeSearchViewPageTypeSearch) {
         [self.navigationController setNavigationBarHidden:NO animated:YES];
     } else {
         [self.navigationController setNavigationBarHidden:YES animated:YES];
@@ -94,6 +94,8 @@
         
     } failure:^(NSError *error) {
         NSLog(@"An error has occured during read! \n%@", error);
+        _employees = [OfflineDataProvider getEmployees:searchText];
+        [self.tableView reloadData];
     }];
     _load_mutex = true;
 }
@@ -160,6 +162,15 @@
     return cell;
 }
 
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    if (_pageType == kEmployeeSearchViewPageTypeDReports) {
+        if ([_employees count]) {
+            return [[NSString alloc] initWithFormat:@"%d Direct Reports:", [_employees count]];
+        }
+    }
+    return nil;
+}
+
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
     if (_pageType == kEmployeeSearchViewPageTypeDReports) {
         if ([_employees count]) {
@@ -171,7 +182,7 @@
                 } else {
                     [locationDict setObject:[NSNumber numberWithInteger:1] forKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]];
                 }
-                if ([[_employees objectAtIndex:i] objectForKey:@"title"] != [NSNull null]) {
+                if ([[_employees objectAtIndex:i] objectForKey:@"title"] != [NSNull null] && [[[_employees objectAtIndex:i] objectForKey:@"title"] length]) {
                     if ([titleDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"title"]]) {
                         [titleDict setObject:[NSNumber numberWithInteger:[[titleDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"title"]] integerValue]+1] forKey:[[_employees objectAtIndex:i] objectForKey:@"title"]];
                     } else {
@@ -200,7 +211,7 @@
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
     StaffDetailTableViewController *detailViewController = [[StaffDetailTableViewController alloc] initWithStyle:UITableViewStyleGrouped];
-    detailViewController.person = [_employees objectAtIndex:indexPath.row];
+    detailViewController.employee = [_employees objectAtIndex:indexPath.row];
     
     [self.navigationController pushViewController:detailViewController animated:YES];
 }

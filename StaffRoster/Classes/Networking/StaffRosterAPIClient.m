@@ -6,7 +6,7 @@
 
 #import "StaffRosterAPIClient.h"
 
-static NSString * const kStaffRosterAPIBaseURLString = @"http://localhost/aerogear/";
+static NSString * const kStaffRosterAPIBaseURLString = kRESTfulBaseURL;
 
 @implementation StaffRosterAPIClient
 
@@ -14,6 +14,8 @@ static NSString * const kStaffRosterAPIBaseURLString = @"http://localhost/aeroge
 @synthesize managerPipe = _managerPipe;
 @synthesize colleaguesPipe = _colleaguesPipe;
 @synthesize dreportsPipe = _dreportsPipe;
+@synthesize syncCheckPipe = _syncCheckPipe;
+@synthesize offlineDataPipe = _offlineDataPipe;
 
 + (StaffRosterAPIClient *)sharedInstance {
     static StaffRosterAPIClient *_sharedInstance = nil;
@@ -34,19 +36,34 @@ static NSString * const kStaffRosterAPIBaseURLString = @"http://localhost/aeroge
         // once pipeline is constructed setup the pipes that will
         // point to the remote application REST endpoints
         _employeesPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
-            [config setName:@"get_data_simple.php"];
+            [config setName:@"employees"];
+            [config setEndpoint:@"get_data_simple.php"];
         }];
+        
         // ...any other pipes
         _managerPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
-            [config setName:@"get_manager.php"];
+            [config setName:@"manager"];
+            [config setEndpoint:@"get_manager.php"];
         }];
         
         _colleaguesPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
-            [config setName:@"get_colleagues.php"];
+            [config setName:@"colleagues"];
+            [config setEndpoint:@"get_colleagues.php"];
         }];
         
         _dreportsPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
-            [config setName:@"get_dreports.php"];
+            [config setName:@"dreports"];
+            [config setEndpoint:@"get_dreports.php"];
+        }];
+        
+        _syncCheckPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
+            [config setName:@"sync_check"];
+            [config setEndpoint:@"check_sync_time.php"];
+        }];
+        
+        _offlineDataPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
+            [config setName:@"sync_employees"];
+            [config setEndpoint:@"get_offline_data.php"];
         }];
     }
     

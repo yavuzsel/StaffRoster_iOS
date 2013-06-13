@@ -16,5 +16,9 @@
 
 @property(readonly, nonatomic) id<AGPipe> dreportsPipe;
 
+@property(readonly, nonatomic) id<AGPipe> syncCheckPipe;
+
+@property(readonly, nonatomic) id<AGPipe> offlineDataPipe;
+
 + (StaffRosterAPIClient *)sharedInstance;
 @end

@@ -24,3 +24,7 @@ DerivedData
 
 #Docset/AppleDoc
 */Docset/*
+
+# Local Files
+Constants.h
+

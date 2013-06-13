@@ -11,6 +11,6 @@
 
 @interface StaffDetailTableViewController : UITableViewController
 
-@property (strong) NSDictionary *person;
+@property (strong) NSDictionary *employee;
 
 @end

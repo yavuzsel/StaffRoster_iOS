@@ -58,28 +58,34 @@
     [[StaffRosterAPIClient sharedInstance].syncCheckPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"last_sync_date": [self getLastSyncTime]}] success:^(id responseObject) {
         NSLog(@"Sync response obj: %@", responseObject);
         if ([[[responseObject objectAtIndex:0] objectForKey:@"sync_required"] isEqual:@"true"]) {
-            [self reloadEmployeeDataStore];
+            dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                [self reloadEmployeeDataStore];
+            });
         } else {
             // no need to sync
             //NSLog(@"NO SYNC: %@", [self getAllData]);
+            NSLog(@"Last Synced: %@", [self getLastSyncTime]);
         }
     } failure:^(NSError *error) {
         NSLog(@"An error has occured during read! \n%@", error);
+        NSLog(@"Last Synced: %@", [self getLastSyncTime]);
     }];
 }
 
 + (void)reloadEmployeeDataStore {
     [[StaffRosterAPIClient sharedInstance].offlineDataPipe read:^(id responseObject) {
-        NSLog(@"Offline Data: %@", responseObject);
         // update table with the newly fetched data
         // !!!: handle when reset is not successful, should we really loose what we have loaded?
-        if ([self resetEmployeesStore]) {
-            if([self saveToEmployeesStore:responseObject]) {
-                // everything is successful, so timestamp last sync time
-                // !!!: what if there is a new update on server side between syncCheckTime (send req through syncCheckPipe) and syncCompleteTime (update local data store - i.e now)?
-                [self setLastSyncTimeToNow];
+        dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSLog(@"Offline Data: %@", responseObject);
+            if ([self resetEmployeesStore]) {
+                if([self saveToEmployeesStore:responseObject]) {
+                    // everything is successful, so timestamp last sync time
+                    // !!!: what if there is a new update on server side between syncCheckTime (send req through syncCheckPipe) and syncCompleteTime (update local data store - i.e now)?
+                    [self setLastSyncTimeToNow];
+                }
             }
-        }
+        });
     } failure:^(NSError *error) {
         NSLog(@"An error has occured during read! \n%@", error);
     }];
@@ -104,7 +110,7 @@
 }
 
 + (void)setLastSyncTimeToNow {
-    [[self getSyncTimeDataStore] save:@{@"last_sync_time": [[NSString alloc] initWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]], @"id": @"1"} error:nil];
+    [[self getSyncTimeDataStore] save:@{@"last_sync_time": [[NSString alloc] initWithFormat:@"%f", ([[NSDate date] timeIntervalSince1970])], @"id": @"1"} error:nil];
 }
 
 + (id<AGStore>)getDataStore:(NSString *)storeName withType:(NSString *)storeType {

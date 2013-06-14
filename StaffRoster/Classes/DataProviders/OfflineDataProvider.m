@@ -73,17 +73,16 @@
 }
 
 + (void)reloadEmployeeDataStore {
-    [[StaffRosterAPIClient sharedInstance].offlineDataPipe read:^(id responseObject) {
+    // read with sync time from this pipe too to receive only the new updates. sync_time = 0 -> readAll
+    [[StaffRosterAPIClient sharedInstance].offlineDataPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"last_sync_date": [self getLastSyncTime]}] success:^(id responseObject) {
         // update table with the newly fetched data
         // !!!: handle when reset is not successful, should we really loose what we have loaded?
         dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            NSLog(@"Offline Data: %@", responseObject);
-            if ([self resetEmployeesStore]) {
-                if([self saveToEmployeesStore:responseObject]) {
-                    // everything is successful, so timestamp last sync time
-                    // !!!: what if there is a new update on server side between syncCheckTime (send req through syncCheckPipe) and syncCompleteTime (update local data store - i.e now)?
-                    [self setLastSyncTimeToNow];
-                }
+            //NSLog(@"Offline Data: %@", responseObject);
+            if([self saveToEmployeesStore:responseObject]) {
+                // everything is successful, so timestamp last sync time
+                // !!!: what if there is a new update on server side between syncCheckTime (send req through syncCheckPipe) and syncCompleteTime (update local data store - i.e now)?
+                [self setLastSyncTimeToNow];
             }
         });
     } failure:^(NSError *error) {
@@ -128,6 +127,11 @@
     return [[self getEmployeesDataStore] filter:[NSPredicate predicateWithFormat:@"manager = %@", manager]];
 }
 
++ (id)getLastID {
+    NSArray *sortedIDs = [[[[self getEmployeesDataStore] readAll] valueForKey:@"id"] sortedArrayUsingDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"self" ascending:NO]]];
+    return ([sortedIDs count])?[sortedIDs objectAtIndex:0]:0;
+}
+
 // use with caution!!!
 + (bool)resetEmployeesStore {
     NSError *error;
@@ -139,8 +143,22 @@
 }
 
 + (bool)saveToEmployeesStore:(id)responseObject {
+    NSMutableArray *employeesToAdd = [[NSMutableArray alloc] init];
+    NSArray *unNullifiedResponse = [self unNullifyResponse:responseObject];
+    NSInteger lastID = [[self getLastID] integerValue];
+    for (NSDictionary *employee in unNullifiedResponse) {
+        NSArray *employeesInDataStore = [self getEmployeesByUID:[employee objectForKey:@"uid"]];
+        NSMutableDictionary *employeeToSave = [employee mutableCopy];
+        if ([employeesInDataStore count]) {
+            [employeeToSave setValue:[[employeesInDataStore objectAtIndex:0] objectForKey:@"id"] forKey:@"id"];
+        } else {
+            [employeeToSave setValue:[[NSString alloc] initWithFormat:@"%d", ++lastID] forKey:@"id"];
+        }
+        [employeesToAdd addObject:employeeToSave];
+    }
+    //NSLog(@"Save: %@", employeesToAdd);
     NSError *error;
-    if (![[self getEmployeesDataStore] save:[self unNullifyResponse:responseObject] error:&error]){
+    if (![[self getEmployeesDataStore] save:employeesToAdd error:&error]){
         NSLog(@"Save: An error occured during save! \n%@", error);
         return false;
     }

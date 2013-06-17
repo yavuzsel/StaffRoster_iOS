@@ -58,7 +58,7 @@
     [[StaffRosterAPIClient sharedInstance].syncCheckPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"last_sync_date": [self getLastSyncTime]}] success:^(id responseObject) {
         NSLog(@"Sync response obj: %@", responseObject);
         if ([[[responseObject objectAtIndex:0] objectForKey:@"sync_required"] isEqual:@"true"]) {
-            dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                 [self reloadEmployeeDataStore];
             });
         } else {
@@ -77,12 +77,18 @@
     [[StaffRosterAPIClient sharedInstance].offlineDataPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"last_sync_date": [self getLastSyncTime]}] success:^(id responseObject) {
         // update table with the newly fetched data
         // !!!: handle when reset is not successful, should we really loose what we have loaded?
-        dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            //NSLog(@"Offline Data: %@", responseObject);
-            if([self saveToEmployeesStore:responseObject]) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSLog(@"Offline Data: %@", responseObject);
+            if([self saveToEmployeesStore:[[responseObject objectAtIndex:0] objectForKey:@"records"]]) {
                 // everything is successful, so timestamp last sync time
                 // !!!: what if there is a new update on server side between syncCheckTime (send req through syncCheckPipe) and syncCompleteTime (update local data store - i.e now)?
                 [self setLastSyncTimeToNow];
+                // remove uids --- best effort?
+                if([self removeFromEmployeesStore:[[responseObject objectAtIndex:0] objectForKey:@"uids"]]) {
+                    NSLog(@"Reload Completed Successfully!!!");
+                } else {
+                    NSLog(@"Reload Completed (Remove Error)!!!");
+                }
             }
         });
     } failure:^(NSError *error) {
@@ -142,9 +148,9 @@
     return true;
 }
 
-+ (bool)saveToEmployeesStore:(id)responseObject {
++ (bool)saveToEmployeesStore:(id)recordsList {
     NSMutableArray *employeesToAdd = [[NSMutableArray alloc] init];
-    NSArray *unNullifiedResponse = [self unNullifyResponse:responseObject];
+    NSArray *unNullifiedResponse = [self unNullifyResponse:recordsList];
     NSInteger lastID = [[self getLastID] integerValue];
     for (NSDictionary *employee in unNullifiedResponse) {
         NSArray *employeesInDataStore = [self getEmployeesByUID:[employee objectForKey:@"uid"]];
@@ -163,6 +169,23 @@
         return false;
     }
     return true;
+}
+
++ (bool)removeFromEmployeesStore:(id)uidsList {
+    NSArray *employeesInStore = [self getAllData];
+    bool success = true;
+    NSError *error;
+    for (id employee in employeesInStore) {
+        //NSLog(@"employee: %@", employee);
+        if (![uidsList containsObject:[employee objectForKey:@"uid"]]) {
+            NSLog(@"Removing: %@", employee);
+            if(![[self getEmployeesDataStore] remove:employee error:&error]) {
+                NSLog(@"Remove: An error occured during remove! \n%@", error);
+                success = false;
+            }
+        }
+    }
+    return success;
 }
 
 + (NSArray *)unNullifyResponse:(NSArray *)response {

@@ -9,6 +9,8 @@
 #import "EmployeeSearchViewController.h"
 #import "AppDelegate.h"
 #import "OfflineDataProvider.h"
+#import "StaffDetailTableViewController.h"
+#import "StaffRosterAPIClient.h"
 
 @implementation AppDelegate
 
@@ -17,19 +19,47 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     
-    EmployeeSearchViewController *viewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
-    viewController.pageType = kEmployeeSearchViewPageTypeSearch;
-    self.navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
-    self.navigationController.navigationBarHidden = YES;
+    EmployeeSearchViewController *searchViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    searchViewController.pageType = kEmployeeSearchViewPageTypeSearch;
+    UINavigationController *searchNavigation = [[UINavigationController alloc] initWithRootViewController:searchViewController];
+    searchNavigation.navigationBarHidden = YES;
+    searchNavigation.navigationBar.tintColor = kAppTintColor;
+    searchNavigation.tabBarItem = [[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemSearch tag:0];
+    
+    StaffDetailTableViewController *profileViewController = [[StaffDetailTableViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    
+    // TODO: this part (i.e. setting user for profile page) is gonna change when we introduce the login
+    id employeeInList = [[OfflineDataProvider sharedInstance] getEmployeesByUID:kDefaultAppUserUID];
+    if (employeeInList && [employeeInList count]) {
+        profileViewController.employee = [employeeInList objectAtIndex:0];
+    } else {
+        [[StaffRosterAPIClient sharedInstance].employeesPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"query": kDefaultAppUserCN}] success:^(id responseObject) {
+            if ([responseObject count]) {
+                profileViewController.employee = [responseObject objectAtIndex:0];
+            }            
+        } failure:^(NSError *error) {
+            NSLog(@"An error has occured during profile read! \n%@", error);
+        }];
+    }
+    
+    UINavigationController *profileNavigation = [[UINavigationController alloc] initWithRootViewController:profileViewController];
+    profileNavigation.navigationBar.tintColor = kAppTintColor;
+    profileNavigation.tabBarItem = [[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemContacts tag:1];
+
+    
+    UITabBarController *tabBarController = [[UITabBarController alloc] init];
+    tabBarController.tabBar.tintColor = kAppTintColor;
+    tabBarController.viewControllers = [NSArray arrayWithObjects:searchNavigation, profileNavigation, nil];
 
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    self.window.rootViewController = self.navigationController;
+    self.window.rootViewController = tabBarController;
 
     [self.window makeKeyAndVisible];
     
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [OfflineDataProvider syncDataProvider];
+        [[OfflineDataProvider sharedInstance] syncDataProvider];
+        //NSLog(@"Data: %@", [[OfflineDataProvider sharedInstance] getAllData]);
     });
     
     return YES;

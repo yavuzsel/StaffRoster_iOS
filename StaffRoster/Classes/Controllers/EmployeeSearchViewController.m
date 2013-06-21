@@ -27,19 +27,29 @@
         _pageType = kEmployeeSearchViewPageTypeSearch;
     }
     
+    //self.tableView.backgroundView = nil;
+    self.tableView.backgroundColor = [UIColor whiteColor];
+    
+    UIImageView *tempImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"AppBackground.png"]];
+    //tempImageView.alpha = 0.1;
+    [tempImageView setFrame:[[UIScreen mainScreen] bounds]];
+    
+    self.tableView.backgroundView = tempImageView;
+    
     // set title according to page type and corresponding employee name (_titleName)
     NSString *titleText;
     switch (_pageType) {
         case kEmployeeSearchViewPageTypeSearch:
-            // no visible title bar
+            // no visible title bar but it modifies back button text, so have it here
+            titleText = @"Search";
             break;
             
         case kEmployeeSearchViewPageTypeColleagues:
-            titleText = [[NSString alloc] initWithFormat:@"%@'s Colleagues", ([_titleName length]<7)?_titleName:[[_titleName componentsSeparatedByString:@" "] objectAtIndex:0]];
+            titleText = [[NSString alloc] initWithFormat:@"%@'s Peer%@", ([_titleName length]<7)?_titleName:[[_titleName componentsSeparatedByString:@" "] objectAtIndex:0], (([_employees count]==1)?@"":@"s")];
             break;
             
         case kEmployeeSearchViewPageTypeDReports:
-            titleText = [[NSString alloc] initWithFormat:@"%@'s Direct Reports", ([_titleName length]<7)?_titleName:[[_titleName componentsSeparatedByString:@" "] objectAtIndex:0]];
+            titleText = [[NSString alloc] initWithFormat:@"%@'s Report%@", ([_titleName length]<7)?_titleName:[[_titleName componentsSeparatedByString:@" "] objectAtIndex:0], (([_employees count]==1)?@"":@"s")];
             break;
             
         default:
@@ -53,7 +63,8 @@
     }
     _searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0.0, 0.0, [[UIScreen mainScreen] bounds].size.width, self.tableView.rowHeight)];
     _searchBar.delegate = self;
-    _searchBar.placeholder = @"search employees";
+    _searchBar.tintColor = kAppTintColor;
+    _searchBar.placeholder = @"type name";
 	self.tableView.tableHeaderView = _searchBar;
 }
 
@@ -77,25 +88,38 @@
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
     if ([searchText length] < 3) {
+        [[StaffRosterAPIClient sharedInstance].employeesPipe cancel];
         _employees = nil;
         [self.tableView reloadData];
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
         return;
     }
     if (!_load_mutex) {
         return;
     }
     _load_mutex = false;
-    // fetch the data
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    // cancel previous queries
+    [[StaffRosterAPIClient sharedInstance].employeesPipe cancel];
+    // fetch the new data
     [[StaffRosterAPIClient sharedInstance].employeesPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"query": searchText}] success:^(id responseObject) {
         _employees = responseObject;
         NSLog(@"Response obj: %@", responseObject);
         // update table with the newly fetched data
         [self.tableView reloadData];
-        
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     } failure:^(NSError *error) {
         NSLog(@"An error has occured during read! \n%@", error);
-        _employees = [OfflineDataProvider getEmployees:searchText];
-        [self.tableView reloadData];
+        // reading from offlinedataprovider takes time on some devices, do async
+        // TODO: make sure that sequential read requests will be executed sequentially
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            // !!!: sequential execution cancels loading indicator on slow networks
+            // todo fix above should fix this issue too
+            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+            _employees = [[OfflineDataProvider sharedInstance] getEmployees:searchText];
+            [self.tableView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
+            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        });
     }];
     _load_mutex = true;
 }
@@ -118,21 +142,130 @@
     return ([_employees count])?([_employees count]):1;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+// cell height problem trials (round top and bottom corners and draw cell borders with a custom background), here is the best solution i could come up with so far.
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+    CGFloat widthDiff = 18.0f; // don't like hardcoding this. find a way to calculate!
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+        widthDiff = 88.0f; // grouped tableview ipad cell width = (screen width - 88)
+    }
+    //NSLog(@"Cell Bounds: %@", NSStringFromCGRect(cell.bounds));
+    CGRect origFrame = cell.bounds;
+    origFrame.size.width = cell.bounds.size.width - widthDiff;
+    origFrame.size.height = cell.bounds.size.height + 1; // !!!: don't know why this +1 fixes. my border width (layers line width below)?
+    
+    // set background image
+    UIImageView *bgImg = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"pipe.png"]];
+    [bgImg setFrame:origFrame];
+    cell.backgroundView = bgImg;
 
+    // round top corners of cell 0 and bottom corners of cell N
+    UIBezierPath *maskPath;
+    CAShapeLayer *maskLayer = [CAShapeLayer layer];
+    maskLayer.frame = origFrame;
+    UIRectCorner corner = UIRectCornerAllCorners;
+    //NSLog(@"Cell BG Bounds: %@", NSStringFromCGRect(origFrame));
+    
+    if ([_employees count] > 1 && indexPath.row != 0 && indexPath.row != [_employees count]-1) {
+        maskPath = [UIBezierPath bezierPathWithRect:origFrame];
+    } else {
+        if ([_employees count] > 1) {
+            if (indexPath.row == 0) {
+                corner = (UIRectCornerTopLeft| UIRectCornerTopRight);
+            } else if (indexPath.row == [_employees count]-1) {
+                corner = (UIRectCornerBottomLeft| UIRectCornerBottomRight);
+            }
+        }
+        maskPath = [UIBezierPath bezierPathWithRoundedRect:origFrame byRoundingCorners:corner cornerRadii:CGSizeMake(10.0, 10.0)];
+    }
+    maskLayer.path = maskPath.CGPath;
+    cell.backgroundView.layer.mask = maskLayer;
+
+    // draw border
+    CAShapeLayer *strokeLayer = [CAShapeLayer layer];
+    strokeLayer.path = maskPath.CGPath;
+    strokeLayer.fillColor = [UIColor clearColor].CGColor;
+    strokeLayer.strokeColor = [UIColor lightGrayColor].CGColor;
+    strokeLayer.lineWidth = 2;
+    UIView *strokeView = [[UIView alloc] initWithFrame:origFrame];
+    strokeView.userInteractionEnabled = NO;
+    [strokeView.layer addSublayer:strokeLayer];
+    [cell.backgroundView addSubview:strokeView];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+//    CGFloat widthDiff = 18.0f; // don't like hardcoding this. find a way to calculate!
+//    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+//        widthDiff = 88.0f; // grouped tableview ipad cell width = (screen width - 88)
+//    }
+    
     static NSString *CellIdentifier = @"Cell";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     
     if (cell == nil) {
         cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        //cell.frame = CGRectMake(0.0f, 0.0f, [[UIScreen mainScreen] bounds].size.width-widthDiff, 46.0f);
+//        cell.backgroundView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"pipe.png"]];
+        cell.textLabel.backgroundColor = [UIColor clearColor];
+//        cell.backgroundView.layer.cornerRadius = 10.0f;
+//        cell.backgroundView.clipsToBounds = YES;
+//        cell.backgroundView.layer.borderWidth = 1.0f;
+//        cell.backgroundView.layer.borderColor = [UIColor lightGrayColor].CGColor;
     }
     
-    NSUInteger row = [indexPath row];
+    /*
+     * well, i tried to round the top and bottom corners only, weird cell height changers (even if i set through heightforroatindexpath) is a problem
+     * UX decision: using it as it is.
+     * <!--- leaving this for a better solution --->
+     */
+//    cell.backgroundView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"pipe.png"]];
+//    
+//    // !!!: not sure if creating dedicated cells for top, middle and bottom rows is more efficient in terms of performance. for now i am setting the rounded corners on the go.
+//    UIBezierPath *maskPath;
+//    CAShapeLayer *maskLayer = [CAShapeLayer layer];
+//    maskLayer.frame = cell.backgroundView.bounds;
+//    UIRectCorner corner = UIRectCornerAllCorners;
+//    //NSLog(@"Cell Bounds: %@", NSStringFromCGRect(cell.bounds));
+//    
+//    if ([_employees count] > 1 && indexPath.row != 0 && indexPath.row != [_employees count]-1) {
+//        maskPath = [UIBezierPath bezierPathWithRect:CGRectMake(0.0f, 0.0f, [[UIScreen mainScreen] bounds].size.width-widthDiff, 46.0f)];
+//    } else {
+//        if ([_employees count] > 1) {
+//            if (indexPath.row == 0) {
+//                corner = (UIRectCornerTopLeft| UIRectCornerTopRight);
+//            } else if (indexPath.row == [_employees count]-1) {
+//                corner = (UIRectCornerBottomLeft| UIRectCornerBottomRight);
+//            }
+//        }
+//        /*
+//         * NSLog(@"Cell Bounds: %@", NSStringFromCGRect(cell.bounds));
+//         *
+//         * NSLog(@"Cell Backgroundview Bounds: %@", NSStringFromCGRect(cell.backgroundView.bounds));
+//         *
+//         * !!!: there is a really strange behavior here. cell.backgroundview frame is sth strange on the first load, cell frame is always weird (although everything on ui is always fine).
+//         * now hardcoding the CGRect, but ideally it should use cell.backgroundview frame for mask path
+//         * width comes from grouped tableview's default cell width (screen width - 18), and height comes from grouped tableview's default cell height (46)
+//         *
+//         */
+//        maskPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0.0f, 0.0f, [[UIScreen mainScreen] bounds].size.width-widthDiff, 46.0f) byRoundingCorners:corner cornerRadii:CGSizeMake(10.0, 10.0)];
+//    }
+//    maskLayer.path = maskPath.CGPath;
+//    cell.backgroundView.layer.mask = maskLayer;
+//
+//    // draw border
+//    CAShapeLayer *strokeLayer = [CAShapeLayer layer];
+//    strokeLayer.path = maskPath.CGPath;
+//    strokeLayer.fillColor = [UIColor clearColor].CGColor;
+//    strokeLayer.strokeColor = [UIColor lightGrayColor].CGColor;
+//    strokeLayer.lineWidth = 2;
+//    UIView *strokeView = [[UIView alloc] initWithFrame:cell.backgroundView.bounds];
+//    strokeView.userInteractionEnabled = NO;
+//    [strokeView.layer addSublayer:strokeLayer];
+//    [cell.backgroundView addSubview:strokeView];
     
     if (![_employees count]) {
         switch (_pageType) {
             case kEmployeeSearchViewPageTypeSearch:
-                cell.textLabel.text = @"Search for Employees";
+                cell.textLabel.text = @"search employees by name";
                 break;
                 
             case kEmployeeSearchViewPageTypeColleagues:
@@ -147,18 +280,15 @@
                 cell.textLabel.text = nil;
                 break;
         }
-        
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         cell.accessoryType = UITableViewCellAccessoryNone;
-        return cell;
+    } else {
+        NSUInteger row = [indexPath row];
+        cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        cell.textLabel.text = [[_employees objectAtIndex:row] objectForKey:@"cn"];
     }
-    
-    cell.selectionStyle = UITableViewCellSelectionStyleBlue;
-    
-    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-    
-    cell.textLabel.text = [[_employees objectAtIndex:row] objectForKey:@"cn"];
-    
+//    NSLog(@"Cell Height: %f BG Height: %f", cell.bounds.size.height, cell.backgroundView.bounds.size.height);
     return cell;
 }
 
@@ -215,5 +345,12 @@
     
     [self.navigationController pushViewController:detailViewController animated:YES];
 }
+
+// leaving this for a better solution
+// this is a dummy fix for strange (for now to me) cell height behavior.
+//- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+//    // !!!: WHY? i couldn't find why it changes the height of the cell (even if i set it while creating). :(
+//    return 46.0f;//(indexPath.row == 0)?44.0f:45.0f;
+//}
 
 @end

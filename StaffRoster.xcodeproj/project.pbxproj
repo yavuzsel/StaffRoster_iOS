@@ -8,6 +8,16 @@
 
 /* Begin PBXBuildFile section */
 		4690D24716D84588A607B166 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B42444467B964BE49A6E6238 /* libPods.a */; };
+		D7232AAB17737A3F00EEB447 /* pipe.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AAA17737A3F00EEB447 /* pipe.png */; };
+		D7232AAD17737C6B00EEB447 /* AppBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AAC17737C6B00EEB447 /* AppBackground.png */; };
+		D7232AB117737EE600EEB447 /* icon_email.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AAE17737EE600EEB447 /* icon_email.png */; };
+		D7232AB217737EE600EEB447 /* icon_office.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AAF17737EE600EEB447 /* icon_office.png */; };
+		D7232AB317737EE600EEB447 /* icon_phone.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AB017737EE600EEB447 /* icon_phone.png */; };
+		D7424AC91771069E003E2D12 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D7424AC81771069E003E2D12 /* Default-568h@2x.png */; };
+		D7424ACD177106A9003E2D12 /* StaffAppIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = D7424ACC177106A9003E2D12 /* StaffAppIcon.png */; };
+		D7424ACF177106AC003E2D12 /* StaffAppIcon_HiRes.png in Resources */ = {isa = PBXBuildFile; fileRef = D7424ACE177106AC003E2D12 /* StaffAppIcon_HiRes.png */; };
+		D7424AD017710ABD003E2D12 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = D7424ACA177106A3003E2D12 /* Default.png */; };
+		D7424AD117710AC1003E2D12 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D7424AC61771069A003E2D12 /* Default@2x.png */; };
 		D77DF282175E37D200B3BA78 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D77DF281175E37D200B3BA78 /* QuartzCore.framework */; };
 		D77DF2841760DACA00B3BA78 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = D77DF2831760DACA00B3BA78 /* README.md */; };
 		D7862EB0174E741C00E59D5A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862EAF174E741C00E59D5A /* UIKit.framework */; };
@@ -18,9 +28,6 @@
 		D7862EC1174E741C00E59D5A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D7862EBF174E741C00E59D5A /* InfoPlist.strings */; };
 		D7862EC3174E741C00E59D5A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862EC2174E741C00E59D5A /* main.m */; };
 		D7862EC6174E741C00E59D5A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862EC5174E741C00E59D5A /* AppDelegate.m */; };
-		D7862EC8174E741C00E59D5A /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = D7862EC7174E741C00E59D5A /* Default.png */; };
-		D7862ECA174E741C00E59D5A /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D7862EC9174E741C00E59D5A /* Default@2x.png */; };
-		D7862ECC174E741C00E59D5A /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D7862ECB174E741C00E59D5A /* Default-568h@2x.png */; };
 		D7862ED0174E741C00E59D5A /* EmployeeSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862ECF174E741C00E59D5A /* EmployeeSearchViewController.m */; };
 		D7862ED2174E741C00E59D5A /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = D7862ED1174E741C00E59D5A /* .gitignore */; };
 		D7862EDA174E741C00E59D5A /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7862ED9174E741C00E59D5A /* SenTestingKit.framework */; };
@@ -30,6 +37,8 @@
 		D7862EE7174E741C00E59D5A /* StaffRosterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D7862EE6174E741C00E59D5A /* StaffRosterTests.m */; };
 		D7999CC6174EBC4800EEF930 /* StaffDetailTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D7999CC5174EBC4800EEF930 /* StaffDetailTableViewController.m */; };
 		D7BE599F17690189007F2C20 /* OfflineDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = D7BE599E17690189007F2C20 /* OfflineDataProvider.m */; };
+		D7BE59F8176FB4C6007F2C20 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7BE59F7176FB4C6007F2C20 /* ImageIO.framework */; };
+		D7BE59FA176FB649007F2C20 /* SDWebImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7BE59F9176FB649007F2C20 /* SDWebImage.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +54,16 @@
 /* Begin PBXFileReference section */
 		0937ADEC2B47403CBF0CD0AD /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = SOURCE_ROOT; };
 		B42444467B964BE49A6E6238 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7232AAA17737A3F00EEB447 /* pipe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pipe.png; sourceTree = "<group>"; };
+		D7232AAC17737C6B00EEB447 /* AppBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppBackground.png; sourceTree = "<group>"; };
+		D7232AAE17737EE600EEB447 /* icon_email.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_email.png; sourceTree = "<group>"; };
+		D7232AAF17737EE600EEB447 /* icon_office.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_office.png; sourceTree = "<group>"; };
+		D7232AB017737EE600EEB447 /* icon_phone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_phone.png; sourceTree = "<group>"; };
+		D7424AC61771069A003E2D12 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
+		D7424AC81771069E003E2D12 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		D7424ACA177106A3003E2D12 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
+		D7424ACC177106A9003E2D12 /* StaffAppIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StaffAppIcon.png; sourceTree = "<group>"; };
+		D7424ACE177106AC003E2D12 /* StaffAppIcon_HiRes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StaffAppIcon_HiRes.png; sourceTree = "<group>"; };
 		D77DF281175E37D200B3BA78 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		D77DF2831760DACA00B3BA78 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		D7862EAC174E741C00E59D5A /* StaffRoster.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StaffRoster.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -77,6 +96,8 @@
 		D7BE599D17690189007F2C20 /* OfflineDataProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OfflineDataProvider.h; path = Classes/DataProviders/OfflineDataProvider.h; sourceTree = "<group>"; };
 		D7BE599E17690189007F2C20 /* OfflineDataProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OfflineDataProvider.m; path = Classes/DataProviders/OfflineDataProvider.m; sourceTree = "<group>"; };
 		D7BE59A2176A1A81007F2C20 /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
+		D7BE59F7176FB4C6007F2C20 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		D7BE59F9176FB649007F2C20 /* SDWebImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDWebImage.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,11 +105,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D7BE59F8176FB4C6007F2C20 /* ImageIO.framework in Frameworks */,
 				D77DF282175E37D200B3BA78 /* QuartzCore.framework in Frameworks */,
 				D7862EB0174E741C00E59D5A /* UIKit.framework in Frameworks */,
 				D7862EB2174E741C00E59D5A /* Foundation.framework in Frameworks */,
 				D7862EB4174E741C00E59D5A /* CoreGraphics.framework in Frameworks */,
 				4690D24716D84588A607B166 /* libPods.a in Frameworks */,
+				D7BE59FA176FB649007F2C20 /* SDWebImage.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,6 +131,13 @@
 		D7862EA3174E741C00E59D5A = {
 			isa = PBXGroup;
 			children = (
+				D7424ACE177106AC003E2D12 /* StaffAppIcon_HiRes.png */,
+				D7424ACC177106A9003E2D12 /* StaffAppIcon.png */,
+				D7424ACA177106A3003E2D12 /* Default.png */,
+				D7424AC81771069E003E2D12 /* Default-568h@2x.png */,
+				D7424AC61771069A003E2D12 /* Default@2x.png */,
+				D7BE59F9176FB649007F2C20 /* SDWebImage.framework */,
+				D7BE59F7176FB4C6007F2C20 /* ImageIO.framework */,
 				D77DF2831760DACA00B3BA78 /* README.md */,
 				D77DF281175E37D200B3BA78 /* QuartzCore.framework */,
 				D7862EB5174E741C00E59D5A /* StaffRoster */,
@@ -142,6 +172,7 @@
 		D7862EB5174E741C00E59D5A /* StaffRoster */ = {
 			isa = PBXGroup;
 			children = (
+				D7BE59FB176FC41B007F2C20 /* images */,
 				D7862EB6174E741C00E59D5A /* Podfile */,
 				D7862EC4174E741C00E59D5A /* AppDelegate.h */,
 				D7862EC5174E741C00E59D5A /* AppDelegate.m */,
@@ -216,6 +247,18 @@
 				D7BE599E17690189007F2C20 /* OfflineDataProvider.m */,
 			);
 			name = DataProviders;
+			sourceTree = "<group>";
+		};
+		D7BE59FB176FC41B007F2C20 /* images */ = {
+			isa = PBXGroup;
+			children = (
+				D7232AAE17737EE600EEB447 /* icon_email.png */,
+				D7232AAF17737EE600EEB447 /* icon_office.png */,
+				D7232AB017737EE600EEB447 /* icon_phone.png */,
+				D7232AAC17737C6B00EEB447 /* AppBackground.png */,
+				D7232AAA17737A3F00EEB447 /* pipe.png */,
+			);
+			path = images;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -293,11 +336,18 @@
 			files = (
 				D7862EB7174E741C00E59D5A /* Podfile in Resources */,
 				D7862EC1174E741C00E59D5A /* InfoPlist.strings in Resources */,
-				D7862EC8174E741C00E59D5A /* Default.png in Resources */,
-				D7862ECA174E741C00E59D5A /* Default@2x.png in Resources */,
-				D7862ECC174E741C00E59D5A /* Default-568h@2x.png in Resources */,
 				D7862ED2174E741C00E59D5A /* .gitignore in Resources */,
 				D77DF2841760DACA00B3BA78 /* README.md in Resources */,
+				D7424AC91771069E003E2D12 /* Default-568h@2x.png in Resources */,
+				D7424ACD177106A9003E2D12 /* StaffAppIcon.png in Resources */,
+				D7424ACF177106AC003E2D12 /* StaffAppIcon_HiRes.png in Resources */,
+				D7424AD017710ABD003E2D12 /* Default.png in Resources */,
+				D7424AD117710AC1003E2D12 /* Default@2x.png in Resources */,
+				D7232AAB17737A3F00EEB447 /* pipe.png in Resources */,
+				D7232AAD17737C6B00EEB447 /* AppBackground.png in Resources */,
+				D7232AB117737EE600EEB447 /* icon_email.png in Resources */,
+				D7232AB217737EE600EEB447 /* icon_office.png in Resources */,
+				D7232AB317737EE600EEB447 /* icon_phone.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -469,6 +519,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/StaffRoster\"",
+					"\"$(SRCROOT)\"",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "StaffRoster/StaffRoster-Prefix.pch";
 				INFOPLIST_FILE = "StaffRoster/StaffRoster-Info.plist";
@@ -487,6 +542,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/StaffRoster\"",
+					"\"$(SRCROOT)\"",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "StaffRoster/StaffRoster-Prefix.pch";
 				INFOPLIST_FILE = "StaffRoster/StaffRoster-Info.plist";

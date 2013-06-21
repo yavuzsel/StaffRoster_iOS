@@ -16,6 +16,7 @@ static NSString * const kStaffRosterAPIBaseURLString = kRESTfulBaseURL;
 @synthesize dreportsPipe = _dreportsPipe;
 @synthesize syncCheckPipe = _syncCheckPipe;
 @synthesize offlineDataPipe = _offlineDataPipe;
+@synthesize imageURLPipe = _imageURLPipe;
 
 + (StaffRosterAPIClient *)sharedInstance {
     static StaffRosterAPIClient *_sharedInstance = nil;
@@ -65,6 +66,11 @@ static NSString * const kStaffRosterAPIBaseURLString = kRESTfulBaseURL;
             [config setName:@"sync_employees"];
             [config setEndpoint:@"get_offline_data.php"];
         }];
+        
+        _imageURLPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
+            [config setName:@"image_url"];
+            [config setEndpoint:@"get_image_url.php"];
+        }];        
     }
     
     return self;

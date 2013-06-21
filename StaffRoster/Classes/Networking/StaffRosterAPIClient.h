@@ -20,5 +20,7 @@
 
 @property(readonly, nonatomic) id<AGPipe> offlineDataPipe;
 
+@property(readonly, nonatomic) id<AGPipe> imageURLPipe;
+
 + (StaffRosterAPIClient *)sharedInstance;
 @end

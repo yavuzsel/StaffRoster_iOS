@@ -7,14 +7,28 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "StaffRosterAPIClient.h"
 
 @interface OfflineDataProvider : NSObject
 
-+ (NSArray *)getEmployees:(NSString *)query;
-+ (NSArray *)getManager:(NSString *)query;
-+ (NSArray *)getColleagues:(NSString *)query;
-+ (NSArray *)getDReports:(NSString *)query;
-+ (NSInteger)getDReportsCount:(NSString *)query;
-+ (void)syncDataProvider;
++ (OfflineDataProvider *)sharedInstance;
+
+@property AGDataManager *dManager;
+@property id<AGStore> employeeStore;
+@property id<AGStore> syncTimeStore;
+
+- (NSArray *)getEmployees:(NSString *)query;
+- (NSArray *)getManager:(NSString *)query;
+- (NSArray *)getColleagues:(NSString *)query;
+- (NSInteger)getColleaguesCount:(NSString *)query;
+- (NSArray *)getDReports:(NSString *)query;
+- (NSInteger)getDReportsCount:(NSString *)query;
+- (NSArray *)getEmployeesByUID:(NSString *)uid;
+- (void)syncDataProvider;
+
+- (NSArray *)getAllData;
+
+- (bool)setProfileImagePath:(NSString *)imgPath toEmployee:(id)employee;
+- (NSString *)getProfileImagePath:(id)employee;
 
 @end

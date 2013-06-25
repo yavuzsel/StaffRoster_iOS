@@ -17,5 +17,6 @@ typedef enum {
 @property EmployeeSearchViewPageType pageType;
 @property NSArray *employees;
 @property NSString *titleName;
+@property bool pageSubtypeSortTypeIsLocation;
 
 @end

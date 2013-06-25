@@ -8,14 +8,17 @@
 
 /* Begin PBXBuildFile section */
 		4690D24716D84588A607B166 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B42444467B964BE49A6E6238 /* libPods.a */; };
+		D70A508B1778F16B0007A167 /* RHLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = D70A508A1778F16B0007A167 /* RHLocation.m */; };
 		D7232AAB17737A3F00EEB447 /* pipe.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AAA17737A3F00EEB447 /* pipe.png */; };
 		D7232AAD17737C6B00EEB447 /* AppBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AAC17737C6B00EEB447 /* AppBackground.png */; };
 		D7232AB117737EE600EEB447 /* icon_email.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AAE17737EE600EEB447 /* icon_email.png */; };
 		D7232AB217737EE600EEB447 /* icon_office.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AAF17737EE600EEB447 /* icon_office.png */; };
 		D7232AB317737EE600EEB447 /* icon_phone.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AB017737EE600EEB447 /* icon_phone.png */; };
+		D7232AB51778A63B00EEB447 /* StaffAppIcon_v2.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AB41778A63B00EEB447 /* StaffAppIcon_v2.png */; };
+		D7232AB71778A64B00EEB447 /* StaffAppIcon_HiRes_v2.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AB61778A64B00EEB447 /* StaffAppIcon_HiRes_v2.png */; };
+		D7232ABA1778A6DE00EEB447 /* icon_atoz.png in Resources */ = {isa = PBXBuildFile; fileRef = D7232AB81778A6DE00EEB447 /* icon_atoz.png */; };
+		D7232ABF1778B39B00EEB447 /* EmployeeListCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D7232ABE1778B39B00EEB447 /* EmployeeListCell.m */; };
 		D7424AC91771069E003E2D12 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D7424AC81771069E003E2D12 /* Default-568h@2x.png */; };
-		D7424ACD177106A9003E2D12 /* StaffAppIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = D7424ACC177106A9003E2D12 /* StaffAppIcon.png */; };
-		D7424ACF177106AC003E2D12 /* StaffAppIcon_HiRes.png in Resources */ = {isa = PBXBuildFile; fileRef = D7424ACE177106AC003E2D12 /* StaffAppIcon_HiRes.png */; };
 		D7424AD017710ABD003E2D12 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = D7424ACA177106A3003E2D12 /* Default.png */; };
 		D7424AD117710AC1003E2D12 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D7424AC61771069A003E2D12 /* Default@2x.png */; };
 		D77DF282175E37D200B3BA78 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D77DF281175E37D200B3BA78 /* QuartzCore.framework */; };
@@ -54,16 +57,21 @@
 /* Begin PBXFileReference section */
 		0937ADEC2B47403CBF0CD0AD /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = SOURCE_ROOT; };
 		B42444467B964BE49A6E6238 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D70A50891778F16B0007A167 /* RHLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RHLocation.h; path = Classes/Objects/RHLocation.h; sourceTree = "<group>"; };
+		D70A508A1778F16B0007A167 /* RHLocation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RHLocation.m; path = Classes/Objects/RHLocation.m; sourceTree = "<group>"; };
 		D7232AAA17737A3F00EEB447 /* pipe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pipe.png; sourceTree = "<group>"; };
 		D7232AAC17737C6B00EEB447 /* AppBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppBackground.png; sourceTree = "<group>"; };
 		D7232AAE17737EE600EEB447 /* icon_email.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_email.png; sourceTree = "<group>"; };
 		D7232AAF17737EE600EEB447 /* icon_office.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_office.png; sourceTree = "<group>"; };
 		D7232AB017737EE600EEB447 /* icon_phone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_phone.png; sourceTree = "<group>"; };
+		D7232AB41778A63B00EEB447 /* StaffAppIcon_v2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StaffAppIcon_v2.png; sourceTree = "<group>"; };
+		D7232AB61778A64B00EEB447 /* StaffAppIcon_HiRes_v2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StaffAppIcon_HiRes_v2.png; sourceTree = "<group>"; };
+		D7232AB81778A6DE00EEB447 /* icon_atoz.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_atoz.png; sourceTree = "<group>"; };
+		D7232ABD1778B39B00EEB447 /* EmployeeListCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EmployeeListCell.h; path = Classes/UIElements/EmployeeListCell.h; sourceTree = "<group>"; };
+		D7232ABE1778B39B00EEB447 /* EmployeeListCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EmployeeListCell.m; path = Classes/UIElements/EmployeeListCell.m; sourceTree = "<group>"; };
 		D7424AC61771069A003E2D12 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		D7424AC81771069E003E2D12 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		D7424ACA177106A3003E2D12 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
-		D7424ACC177106A9003E2D12 /* StaffAppIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StaffAppIcon.png; sourceTree = "<group>"; };
-		D7424ACE177106AC003E2D12 /* StaffAppIcon_HiRes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StaffAppIcon_HiRes.png; sourceTree = "<group>"; };
 		D77DF281175E37D200B3BA78 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		D77DF2831760DACA00B3BA78 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		D7862EAC174E741C00E59D5A /* StaffRoster.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StaffRoster.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -128,11 +136,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D7232ABC1778B35200EEB447 /* UIElements */ = {
+			isa = PBXGroup;
+			children = (
+				D7232ABD1778B39B00EEB447 /* EmployeeListCell.h */,
+				D7232ABE1778B39B00EEB447 /* EmployeeListCell.m */,
+			);
+			name = UIElements;
+			sourceTree = "<group>";
+		};
+		D7232AC01778F0E300EEB447 /* Objects */ = {
+			isa = PBXGroup;
+			children = (
+				D70A50891778F16B0007A167 /* RHLocation.h */,
+				D70A508A1778F16B0007A167 /* RHLocation.m */,
+			);
+			name = Objects;
+			sourceTree = "<group>";
+		};
 		D7862EA3174E741C00E59D5A = {
 			isa = PBXGroup;
 			children = (
-				D7424ACE177106AC003E2D12 /* StaffAppIcon_HiRes.png */,
-				D7424ACC177106A9003E2D12 /* StaffAppIcon.png */,
+				D7232AB61778A64B00EEB447 /* StaffAppIcon_HiRes_v2.png */,
+				D7232AB41778A63B00EEB447 /* StaffAppIcon_v2.png */,
 				D7424ACA177106A3003E2D12 /* Default.png */,
 				D7424AC81771069E003E2D12 /* Default-568h@2x.png */,
 				D7424AC61771069A003E2D12 /* Default@2x.png */,
@@ -172,6 +198,8 @@
 		D7862EB5174E741C00E59D5A /* StaffRoster */ = {
 			isa = PBXGroup;
 			children = (
+				D7232AC01778F0E300EEB447 /* Objects */,
+				D7232ABC1778B35200EEB447 /* UIElements */,
 				D7BE59FB176FC41B007F2C20 /* images */,
 				D7862EB6174E741C00E59D5A /* Podfile */,
 				D7862EC4174E741C00E59D5A /* AppDelegate.h */,
@@ -252,6 +280,7 @@
 		D7BE59FB176FC41B007F2C20 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				D7232AB81778A6DE00EEB447 /* icon_atoz.png */,
 				D7232AAE17737EE600EEB447 /* icon_email.png */,
 				D7232AAF17737EE600EEB447 /* icon_office.png */,
 				D7232AB017737EE600EEB447 /* icon_phone.png */,
@@ -339,8 +368,6 @@
 				D7862ED2174E741C00E59D5A /* .gitignore in Resources */,
 				D77DF2841760DACA00B3BA78 /* README.md in Resources */,
 				D7424AC91771069E003E2D12 /* Default-568h@2x.png in Resources */,
-				D7424ACD177106A9003E2D12 /* StaffAppIcon.png in Resources */,
-				D7424ACF177106AC003E2D12 /* StaffAppIcon_HiRes.png in Resources */,
 				D7424AD017710ABD003E2D12 /* Default.png in Resources */,
 				D7424AD117710AC1003E2D12 /* Default@2x.png in Resources */,
 				D7232AAB17737A3F00EEB447 /* pipe.png in Resources */,
@@ -348,6 +375,9 @@
 				D7232AB117737EE600EEB447 /* icon_email.png in Resources */,
 				D7232AB217737EE600EEB447 /* icon_office.png in Resources */,
 				D7232AB317737EE600EEB447 /* icon_phone.png in Resources */,
+				D7232AB51778A63B00EEB447 /* StaffAppIcon_v2.png in Resources */,
+				D7232AB71778A64B00EEB447 /* StaffAppIcon_HiRes_v2.png in Resources */,
+				D7232ABA1778A6DE00EEB447 /* icon_atoz.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -416,6 +446,8 @@
 				D7862ED0174E741C00E59D5A /* EmployeeSearchViewController.m in Sources */,
 				D7999CC6174EBC4800EEF930 /* StaffDetailTableViewController.m in Sources */,
 				D7BE599F17690189007F2C20 /* OfflineDataProvider.m in Sources */,
+				D7232ABF1778B39B00EEB447 /* EmployeeListCell.m in Sources */,
+				D70A508B1778F16B0007A167 /* RHLocation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

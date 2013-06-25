@@ -117,8 +117,9 @@
         return;
     }
 
-    // load number of direct reports, no need to hold lock
+    // load number of direct reports and number of colleagues, no need to hold lock
     [self loadNumberOfDReports];
+    [self loadNumberOfColleagues];
     
     // load profile image path
     [self loadProfileImagePath];
@@ -145,6 +146,7 @@
 
 - (void)respondToProfileImageLoad {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+    // !!!: check if we need to reload the section to draw image
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
 }
 
@@ -166,8 +168,6 @@
 - (void)respondToNumberOfDReportsLoad {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     if (_num_of_dreports == 0) {
-        // !!!: this is here because async load causes problem when updating tableview
-        [self loadNumberOfColleagues];
         return;
     }
     [self.tableView beginUpdates];
@@ -176,11 +176,7 @@
     } else {
         [self.tableView insertSections:[NSIndexSet indexSetWithIndex:3] withRowAnimation:UITableViewRowAnimationFade];
     }
-    //[self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
     [self.tableView endUpdates];
-    
-    // !!!: this is here because async load causes problem when updating tableview
-    [self loadNumberOfColleagues];
 }
 
 - (void)loadNumberOfColleagues {
@@ -226,80 +222,78 @@
 }
 
 - (void)fingerSwipeLeft:(UITapGestureRecognizer *)recognizer {
-    // Insert your own code to handle swipe left
     // this is needed only if i register same event for more than one gesture recognizer (i.e. for different number of touches required)
-    NSUInteger touches = recognizer.numberOfTouches;
-    switch (touches) {
-        case 1:
-            break;
-        case 2:
-            break;
-        case 3:
-            break;
-        default:
-            break;
-    }
+//    NSUInteger touches = recognizer.numberOfTouches;
+//    switch (touches) {
+//        case 1:
+//            break;
+//        case 2:
+//            break;
+//        case 3:
+//            break;
+//        default:
+//            break;
+//    }
     [self loadDReports];
-    NSLog(@"swiped left. %d touches.", touches);
+//    NSLog(@"swiped left. %d touches.", touches);
 }
 
 - (void)fingerSwipeRight:(UITapGestureRecognizer *)recognizer {
-    // Insert your own code to handle swipe right
-    NSUInteger touches = recognizer.numberOfTouches;
-    switch (touches) {
-        case 1:
-            break;
-        case 2:
-            break;
-        case 3:
-            break;
-        default:
-            break;
-    }
+//    NSUInteger touches = recognizer.numberOfTouches;
+//    switch (touches) {
+//        case 1:
+//            break;
+//        case 2:
+//            break;
+//        case 3:
+//            break;
+//        default:
+//            break;
+//    }
     [self loadManager];
-    NSLog(@"swiped right. %d touches.", touches);
+//    NSLog(@"swiped right. %d touches.", touches);
 }
 
 - (void)fingerSwipeUp:(UITapGestureRecognizer *)recognizer {
-    // Insert your own code to handle swipe up
-    NSUInteger touches = recognizer.numberOfTouches;
-    switch (touches) {
-        case 1:
-            break;
-        case 2:
-            break;
-        case 3:
-            break;
-        default:
-            break;
-    }
+//    NSUInteger touches = recognizer.numberOfTouches;
+//    switch (touches) {
+//        case 1:
+//            break;
+//        case 2:
+//            break;
+//        case 3:
+//            break;
+//        default:
+//            break;
+//    }
     [self loadColleagues:kCATransitionFromLeft];
-    NSLog(@"swiped up. %d touches.", touches);
+//    NSLog(@"swiped up. %d touches.", touches);
 }
 
 - (void)fingerSwipeDown:(UITapGestureRecognizer *)recognizer {
-    // Insert your own code to handle swipe down
-    NSUInteger touches = recognizer.numberOfTouches;
-    switch (touches) {
-        case 1:
-            break;
-        case 2:
-            break;
-        case 3:
-            break;
-        default:
-            break;
-    }
+//    NSUInteger touches = recognizer.numberOfTouches;
+//    switch (touches) {
+//        case 1:
+//            break;
+//        case 2:
+//            break;
+//        case 3:
+//            break;
+//        default:
+//            break;
+//    }
     [self loadColleagues:kCATransitionFromRight];
-    NSLog(@"swiped down. %d touches.", touches);
+//    NSLog(@"swiped down. %d touches.", touches);
 }
 
 - (void)loadManager {
+    // !!!: here i could use a "real" mutex, but not allowing to initiate a new request seems more reasonable than queueing the requests and waiting for the previous request to finish (applies to all fake mutex uses in this VC!)
+    // should i ever call this as mutex (ambiguous)?
     if (!_load_mutex) {
         return;
     }
     _load_mutex = false;
-    if (!_employee) {
+    if (!_employee) { // does this check take some time? mutex is held before to make sure we are safe even if it does
         _load_mutex = true;
         return;
     }
@@ -379,7 +373,7 @@
         transition.subtype = subtype;
         [self.navigationController.view.layer addAnimation:transition
                                                     forKey:kCATransition];
-        EmployeeSearchViewController *detailViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
+        EmployeeSearchViewController *detailViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStylePlain];
         detailViewController.employees = responseObject;
         detailViewController.titleName = [_employee objectForKey:@"cn"];
         detailViewController.pageType = kEmployeeSearchViewPageTypeColleagues;
@@ -433,7 +427,7 @@
     transition.subtype = transitionSubtype;
     [self.navigationController.view.layer addAnimation:transition
                                                 forKey:kCATransition];
-    EmployeeSearchViewController *detailViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    EmployeeSearchViewController *detailViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStylePlain];
     detailViewController.employees = responseObject;
     detailViewController.titleName = [_employee objectForKey:@"cn"];
     detailViewController.pageType = kEmployeeSearchViewPageTypeDReports;
@@ -552,7 +546,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    CGFloat widthDiff = 18.0f; // don't like hardcoding this. find a way to calculate!
+    CGFloat widthDiff = 18.0f; // don't like hardcoding these. find a way to calculate!
     CGFloat locAdjust = 10.0f;
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
         widthDiff = 88.0f; // grouped tableview ipad cell width = (screen width - 88)
@@ -599,7 +593,7 @@
             titleLabel = (UILabel *)[cell.contentView viewWithTag:PROFILE_TITLE_TAG];
         }
         cnLabel.text = [_employee objectForKey:@"cn"];
-        [prflPhoto setImageWithURL:[NSURL URLWithString:_profile_img_path] placeholderImage:[UIImage imageNamed:@"StaffAppIcon_HiRes.png"]];
+        [prflPhoto setImageWithURL:[NSURL URLWithString:_profile_img_path] placeholderImage:[UIImage imageNamed:@"StaffAppIcon_HiRes_v2.png"]];
         if([_employee objectForKey:@"title"] != [NSNull null] && [[_employee objectForKey:@"title"] length]) {
             titleLabel.text = [_employee objectForKey:@"title"];
         } else {
@@ -653,14 +647,14 @@
         UITextView *clickableLabel;
         if (cell == nil) {
             cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:PPhotoRowCellIdentifier];
-            cell.frame = CGRectMake(0.0f, 0.0f, [[UIScreen mainScreen] bounds].size.width, 46.0f);
+            //cell.frame = CGRectMake(0.0f, 0.0f, [[UIScreen mainScreen] bounds].size.width, 46.0f);
             rowPhoto = [[UIImageView alloc] initWithFrame:CGRectMake(10.0f, 5.0f, 36.0f, 36.0f)];
             rowPhoto.tag = ROW_PHOTO_TAG;
             rowPhoto.layer.cornerRadius = 2.0f;
             rowPhoto.clipsToBounds = YES;
             [cell.contentView addSubview:rowPhoto];
             
-            UIView *seperator = [[UIView alloc] initWithFrame:CGRectMake(56.0f, 0.0f, 1.0f, 45.0f)];
+            UIView *seperator = [[UIView alloc] initWithFrame:CGRectMake(56.0f, 0.0f, 1.0f, cell.frame.size.height)];
             [seperator setBackgroundColor:[UIColor lightGrayColor]];
             [cell.contentView addSubview:seperator];
             
@@ -673,6 +667,8 @@
             clickableLabel.scrollEnabled = NO;
             clickableLabel.dataDetectorTypes = UIDataDetectorTypeAll;
             [cell.contentView addSubview:clickableLabel];
+            //cell.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"pipe.png"]];
+            // to change border colors, i need to modify backgroundview
             cell.backgroundView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"pipe.png"]];
             cell.backgroundView.layer.cornerRadius = 10.0f;
             cell.backgroundView.clipsToBounds = YES;

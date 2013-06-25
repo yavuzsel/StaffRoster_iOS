@@ -8,15 +8,23 @@
 #import "StaffRosterAPIClient.h"
 #import "StaffDetailTableViewController.h"
 #import "OfflineDataProvider.h"
+#import <SDWebImage/UIImageView+WebCache.h>
+#import "EmployeeListCell.h"
+#import "RHLocation.h"
+
+#define ATOZ_TAG 1
+#define LOC_TAG 2
 
 @implementation EmployeeSearchViewController {
     UISearchBar *_searchBar;
     bool _load_mutex;
+    NSMutableArray *locBasedSortResult;
 }
 
 @synthesize employees = _employees;
 @synthesize pageType = _pageType;
 @synthesize titleName = _titleName;
+@synthesize pageSubtypeSortTypeIsLocation = _pageSubtypeSortTypeIsLocation;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -26,6 +34,8 @@
         // default to search page
         _pageType = kEmployeeSearchViewPageTypeSearch;
     }
+    
+    _pageSubtypeSortTypeIsLocation = false;
     
     //self.tableView.backgroundView = nil;
     self.tableView.backgroundColor = [UIColor whiteColor];
@@ -59,8 +69,16 @@
     
     _load_mutex = true;
     if (_pageType != kEmployeeSearchViewPageTypeSearch) {
+        // sort employees by name
+        NSSortDescriptor *valueDescriptor = [[NSSortDescriptor alloc] initWithKey:@"cn" ascending:YES];
+        NSArray * descriptors = [NSArray arrayWithObject:valueDescriptor];
+        _employees = [_employees sortedArrayUsingDescriptors:descriptors];
+        
+        self.tableView.rowHeight = 64.0f;
         return;
     }
+    self.tableView.rowHeight = 44.0f;
+    
     _searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0.0, 0.0, [[UIScreen mainScreen] bounds].size.width, self.tableView.rowHeight)];
     _searchBar.delegate = self;
     _searchBar.tintColor = kAppTintColor;
@@ -111,7 +129,7 @@
     } failure:^(NSError *error) {
         NSLog(@"An error has occured during read! \n%@", error);
         // reading from offlinedataprovider takes time on some devices, do async
-        // TODO: make sure that sequential read requests will be executed sequentially
+        // TODO: make sure that sequential read request responses will be executed in the same order
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             // !!!: sequential execution cancels loading indicator on slow networks
             // todo fix above should fix this issue too
@@ -138,11 +156,29 @@
     return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return ([_employees count])?([_employees count]):1;
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    if (_pageType == kEmployeeSearchViewPageTypeSearch) {
+        return 1;
+    }
+    if (_pageSubtypeSortTypeIsLocation) {
+        return locBasedSortResult.count+1;
+    }
+    return 2;
 }
 
-// cell height problem trials (round top and bottom corners and draw cell borders with a custom background), here is the best solution i could come up with so far.
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    if (_pageSubtypeSortTypeIsLocation && section > 0) {
+        return ((RHLocation *)[locBasedSortResult objectAtIndex:(section-1)]).employeeList.count;
+    }
+    if (_pageType == kEmployeeSearchViewPageTypeSearch || section > 0) {
+        return ([_employees count])?([_employees count]):1;
+    }
+    return 1;
+}
+
+// <!-- leaving this for more efficient solution -->
+// cell height problem trials (round top and bottom corners and draw cell borders with a custom background), here is another solution.
+/*
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
     CGFloat widthDiff = 18.0f; // don't like hardcoding this. find a way to calculate!
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
@@ -185,31 +221,224 @@
     strokeLayer.path = maskPath.CGPath;
     strokeLayer.fillColor = [UIColor clearColor].CGColor;
     strokeLayer.strokeColor = [UIColor lightGrayColor].CGColor;
-    strokeLayer.lineWidth = 2;
+    strokeLayer.lineWidth = 4;
     UIView *strokeView = [[UIView alloc] initWithFrame:origFrame];
     strokeView.userInteractionEnabled = NO;
     [strokeView.layer addSublayer:strokeLayer];
     [cell.backgroundView addSubview:strokeView];
 }
+*/
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+    // when cell content view is customized, these needs to be set here
+    // but it is more costly that setting them on create
+    // so search cells are not customized and not set here
+    if (_pageType != kEmployeeSearchViewPageTypeSearch && indexPath.section > 0) {
+        cell.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"pipe.png"]];
+        cell.detailTextLabel.backgroundColor = [UIColor clearColor];
+        cell.textLabel.backgroundColor = [UIColor clearColor];
+    }
+}
+
+- (void)sortByLocation {
+    if (locBasedSortResult) {
+        return;
+    }
+    locBasedSortResult = [[NSMutableArray alloc] init];
+    bool isLocExist;
+    for (id employee in _employees) {
+        isLocExist = false;
+        for (id rhLocation in locBasedSortResult) {
+            if ([((RHLocation *)rhLocation).locName isEqual:[employee objectForKey:@"rhatlocation"]]) {
+                [((RHLocation *)rhLocation).employeeList addObject:employee];
+                isLocExist = true;
+                break;
+            }
+        }
+        if (!isLocExist) {
+            RHLocation *newLocation = [[RHLocation alloc] init];
+            newLocation.locName = [employee objectForKey:@"rhatlocation"];
+            [newLocation.employeeList addObject:employee];
+            [locBasedSortResult addObject:newLocation];
+        }
+    }
+    // sort by location
+    NSSortDescriptor *valueDescriptor = [[NSSortDescriptor alloc] initWithKey:@"locName" ascending:YES];
+    NSArray * descriptors = [NSArray arrayWithObject:valueDescriptor];
+    locBasedSortResult = [[locBasedSortResult sortedArrayUsingDescriptors:descriptors] mutableCopy];
+}
+
+- (void)sortClicked:(id)sender {
+    UIButton *clickedBtn = (UIButton *)sender;
+    if (clickedBtn.tag == LOC_TAG) {
+        if (_pageSubtypeSortTypeIsLocation) {
+            return;
+        } else if (!_pageSubtypeSortTypeIsLocation) {
+            clickedBtn.backgroundColor = [UIColor lightGrayColor];
+            UIButton *atozBtn = (UIButton *)[clickedBtn.superview viewWithTag:ATOZ_TAG];
+            atozBtn.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"pipe.png"]];
+            _pageSubtypeSortTypeIsLocation = true;
+            [self sortByLocation];
+            [self.tableView reloadData];
+        }
+    } else if (clickedBtn.tag == ATOZ_TAG) {
+        if (_pageSubtypeSortTypeIsLocation) {
+            clickedBtn.backgroundColor = [UIColor lightGrayColor];
+            UIButton *locBtn = (UIButton *)[clickedBtn.superview viewWithTag:LOC_TAG];
+            locBtn.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"pipe.png"]];
+            _pageSubtypeSortTypeIsLocation = false;
+            // !!!: find a good animation for sorting the list
+            [self.tableView reloadData];
+        } else if (!_pageSubtypeSortTypeIsLocation) {
+            return;
+        }
+    }
+}
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-//    CGFloat widthDiff = 18.0f; // don't like hardcoding this. find a way to calculate!
-//    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-//        widthDiff = 88.0f; // grouped tableview ipad cell width = (screen width - 88)
-//    }
     
-    static NSString *CellIdentifier = @"Cell";
+    static NSString *CellIdentifier;// = @"Cell";
+    
+    if (indexPath.section == 0 && _pageType != kEmployeeSearchViewPageTypeSearch) {
+        CellIdentifier = @"SortSectionCell";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+        if (cell == nil) {
+            cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+            cell.backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
+            cell.backgroundColor = [UIColor clearColor];
+            // create sort buttons section here
+            UIView *sortSection = [[UIView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, [[UIScreen mainScreen] bounds].size.width, 118.0f)];
+            UILabel *pageTitle = [[UILabel alloc] initWithFrame:CGRectMake(15.0f, 5.0f, [[UIScreen mainScreen] bounds].size.width-30.0f, 44.0f)];
+            pageTitle.backgroundColor = [UIColor clearColor];
+            pageTitle.font = [UIFont boldSystemFontOfSize:17.0f];
+            if ([_employees count]) {
+                if (_pageType == kEmployeeSearchViewPageTypeDReports) {
+                    pageTitle.text = [[NSString alloc] initWithFormat:@"%@'s Direct Report%@:", ([_titleName length]<7)?_titleName:[[_titleName componentsSeparatedByString:@" "] objectAtIndex:0], (([_employees count]==1)?@"":@"s")];
+                } else if (_pageType == kEmployeeSearchViewPageTypeColleagues) {
+                    pageTitle.text = [[NSString alloc] initWithFormat:@"%@'s Peer%@:", ([_titleName length]<7)?_titleName:[[_titleName componentsSeparatedByString:@" "] objectAtIndex:0], (([_employees count]==1)?@"":@"s")];
+                }
+            }
+            [sortSection addSubview:pageTitle];
+            
+            UIView *buttonContainer = [[UIView alloc] initWithFrame:CGRectMake(([[UIScreen mainScreen] bounds].size.width/2)-64.0f, 54.0f, 128.0f, 46.0f)];
+            
+            UIButton *atozSort = [UIButton buttonWithType:UIButtonTypeCustom];
+            atozSort.tag = ATOZ_TAG;
+            atozSort.backgroundColor = [UIColor lightGrayColor];
+            [atozSort addTarget:self action:@selector(sortClicked:) forControlEvents:UIControlEventTouchUpInside];
+            [atozSort setImage:[UIImage imageNamed:@"icon_atoz.png"] forState:UIControlStateNormal];
+            [atozSort setImageEdgeInsets:UIEdgeInsetsMake(11.0, 20.0, 11.0, 20.0)];
+            atozSort.frame = CGRectMake(0.0f, 0.0f, 64.0f, 46.0f);
+            //[atozSort setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+            [buttonContainer addSubview:atozSort];
+            
+            UIButton *locSort = [UIButton buttonWithType:UIButtonTypeCustom];
+            locSort.tag = LOC_TAG;
+            locSort.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"pipe.png"]];
+            [locSort addTarget:self action:@selector(sortClicked:) forControlEvents:UIControlEventTouchUpInside];
+            [locSort setImage:[UIImage imageNamed:@"icon_office.png"] forState:
+             UIControlStateNormal];
+            [locSort setImageEdgeInsets:UIEdgeInsetsMake(11.0, 20.0, 11.0, 20.0)];
+            locSort.frame = CGRectMake(64.0f, 0.0f, 64.0f, 46.0f);
+            //[locSort setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+            [buttonContainer addSubview:locSort];
+            buttonContainer.layer.cornerRadius = 10.0f;
+            buttonContainer.clipsToBounds = YES;
+            
+            CAShapeLayer *strokeLayer = [CAShapeLayer layer];
+            strokeLayer.path = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(([[UIScreen mainScreen] bounds].size.width/2)-64.0f, 54.0f, 128.0f, 46.0f) byRoundingCorners:UIRectCornerAllCorners cornerRadii:CGSizeMake(10.0, 10.0)].CGPath;
+            strokeLayer.fillColor = [UIColor clearColor].CGColor;
+            strokeLayer.strokeColor = [UIColor lightGrayColor].CGColor;
+            strokeLayer.lineWidth = 2;
+            UIView *strokeView = [[UIView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 128.0f, 46.0f)];
+            strokeView.userInteractionEnabled = NO;
+            [strokeView.layer addSublayer:strokeLayer];
+            [cell addSubview:strokeView];
+            
+            [sortSection addSubview:buttonContainer];
+            [cell addSubview:sortSection];
+        }
+        return cell;
+    }
+    
+    /*if ([_employees count] > 1 && indexPath.row != 0 && indexPath.row != [_employees count]-1) {
+        CellIdentifier = @"middleCell";
+    } else {
+        if ([_employees count] > 1) {
+            if (indexPath.row == 0) {
+                CellIdentifier = @"topCell";
+            } else if (indexPath.row == [_employees count]-1) {
+                CellIdentifier = @"bottomCell";
+            }
+        } else {
+            CellIdentifier = @"singleCell";
+        }
+    }*/
+    CellIdentifier = @"Cell";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     
     if (cell == nil) {
-        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
-        //cell.frame = CGRectMake(0.0f, 0.0f, [[UIScreen mainScreen] bounds].size.width-widthDiff, 46.0f);
-//        cell.backgroundView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"pipe.png"]];
-        cell.textLabel.backgroundColor = [UIColor clearColor];
-//        cell.backgroundView.layer.cornerRadius = 10.0f;
-//        cell.backgroundView.clipsToBounds = YES;
-//        cell.backgroundView.layer.borderWidth = 1.0f;
-//        cell.backgroundView.layer.borderColor = [UIColor lightGrayColor].CGColor;
+        cell = [[EmployeeListCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
+        //cell.backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
+        
+        // best solution, works (borders are not fine but performance-wise, there is a significant difference :( ).
+        // !!!: find a way to draw borders
+        cell.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"pipe.png"]];
+        if (_pageType != kEmployeeSearchViewPageTypeSearch) {
+            cell.imageView.layer.cornerRadius = 5.0f;
+            cell.imageView.clipsToBounds = YES;
+        } else {
+            cell.detailTextLabel.backgroundColor = [UIColor clearColor];
+            cell.textLabel.backgroundColor = [UIColor clearColor];
+        }
+        
+        
+        /*CGFloat widthDiff = 18.0f; // don't like hardcoding this. find a way to calculate!
+        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+            widthDiff = 88.0f; // grouped tableview ipad cell width = (screen width - 88)
+        }
+        NSLog(@"Cell Bounds: %@", NSStringFromCGRect(cell.bounds));
+        CGRect origFrame = cell.bounds;
+        origFrame.size.width = cell.bounds.size.width - widthDiff;
+        origFrame.size.height = 44.0f;//cell.bounds.size.height + 1; // !!!: don't know why this +1 fixes. my border width (layers line width below)?
+        
+        // set background image
+        UIImageView *bgImg = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"pipe.png"]];
+        [bgImg setFrame:origFrame];
+        cell.backgroundView = bgImg;
+        
+        // round top corners of cell 0 and bottom corners of cell N
+        UIBezierPath *maskPath;
+        CAShapeLayer *maskLayer = [CAShapeLayer layer];
+        maskLayer.frame = origFrame;
+        UIRectCorner corner = UIRectCornerAllCorners;
+        //NSLog(@"Cell BG Bounds: %@", NSStringFromCGRect(origFrame));
+        
+        if ([_employees count] > 1 && indexPath.row != 0 && indexPath.row != [_employees count]-1) {
+            maskPath = [UIBezierPath bezierPathWithRect:origFrame];
+        } else {
+            if ([_employees count] > 1) {
+                if (indexPath.row == 0) {
+                    corner = (UIRectCornerTopLeft| UIRectCornerTopRight);
+                } else if (indexPath.row == [_employees count]-1) {
+                    corner = (UIRectCornerBottomLeft| UIRectCornerBottomRight);
+                }
+            }
+            maskPath = [UIBezierPath bezierPathWithRoundedRect:origFrame byRoundingCorners:corner cornerRadii:CGSizeMake(10.0, 10.0)];
+        }
+        maskLayer.path = maskPath.CGPath;
+        cell.backgroundView.layer.mask = maskLayer;
+        
+        // draw border
+        CAShapeLayer *strokeLayer = [CAShapeLayer layer];
+        strokeLayer.path = maskPath.CGPath;
+        strokeLayer.fillColor = [UIColor clearColor].CGColor;
+        strokeLayer.strokeColor = [UIColor lightGrayColor].CGColor;
+        strokeLayer.lineWidth = 2;
+        UIView *strokeView = [[UIView alloc] initWithFrame:origFrame];
+        strokeView.userInteractionEnabled = NO;
+        [strokeView.layer addSublayer:strokeLayer];
+        [cell.backgroundView addSubview:strokeView];*/
     }
     
     /*
@@ -280,59 +509,88 @@
                 cell.textLabel.text = nil;
                 break;
         }
+        cell.detailTextLabel.text = nil;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         cell.accessoryType = UITableViewCellAccessoryNone;
     } else {
         NSUInteger row = [indexPath row];
         cell.selectionStyle = UITableViewCellSelectionStyleBlue;
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-        cell.textLabel.text = [[_employees objectAtIndex:row] objectForKey:@"cn"];
+        id employee;
+        if (_pageType == kEmployeeSearchViewPageTypeSearch || !_pageSubtypeSortTypeIsLocation) {
+            employee = [_employees objectAtIndex:row];
+        } else {
+            employee = [((RHLocation *)[locBasedSortResult objectAtIndex:(indexPath.section-1)]).employeeList objectAtIndex:indexPath.row];
+        }
+        
+        cell.textLabel.text = [employee objectForKey:@"cn"];
+        if (_pageType != kEmployeeSearchViewPageTypeSearch && [employee objectForKey:@"title"] && [[employee objectForKey:@"title"] length]) {
+            cell.detailTextLabel.text = [employee objectForKey:@"title"];
+            // !!!: calling offline data provider each time costs a lot. get rid of it soon. (found a workaround for now)
+            // !!!: if img_path does not exist on data provider, should i read from pipe?
+            if (!([employee objectForKey:@"profile_image_path"] && [[employee objectForKey:@"profile_image_path"] length])) {
+                id img_path = [[OfflineDataProvider sharedInstance] getProfileImagePath:employee];
+                if (img_path) {
+                    [employee setObject:img_path forKey:@"profile_image_path"];
+                } else {
+                    // !!!: a workaround for non-existing profile images. sdwebimage uses strict caching, means if url matches, it always uses the cached copy. so i can leverage on this for my workaround.
+                    // here i am NOT modifying the employee on the provider, just placeholding the image url for this VC
+                    [employee setObject:[NSString stringWithFormat:@"%@img/placeholder", kRESTfulBaseURL] forKey:@"profile_image_path"];
+                }
+            }
+            [cell.imageView setImageWithURL:[NSURL URLWithString:[employee objectForKey:@"profile_image_path"]] placeholderImage:[UIImage imageNamed:@"StaffAppIcon_HiRes_v2.png"]];
+            //[cell.imageView setImageWithURL:[NSURL URLWithString:[[OfflineDataProvider sharedInstance] getProfileImagePath:employee]] placeholderImage:[UIImage imageNamed:@"StaffAppIcon_HiRes_v2.png"]];
+        } else {
+            cell.detailTextLabel.text = nil;
+        }
     }
 //    NSLog(@"Cell Height: %f BG Height: %f", cell.bounds.size.height, cell.backgroundView.bounds.size.height);
     return cell;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    if (_pageType == kEmployeeSearchViewPageTypeDReports) {
-        if ([_employees count]) {
-            return [[NSString alloc] initWithFormat:@"%d Direct Reports:", [_employees count]];
-        }
+    if (section == 0) { // by this we have no header on searchview, and no header for the first sections of other views
+        return nil;
+    }
+    if (_pageSubtypeSortTypeIsLocation) {
+        return ((RHLocation *)[locBasedSortResult objectAtIndex:(section-1)]).locName;
     }
     return nil;
 }
 
-- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
-    if (_pageType == kEmployeeSearchViewPageTypeDReports) {
-        if ([_employees count]) {
-            NSMutableDictionary *locationDict = [[NSMutableDictionary alloc] init];
-            NSMutableDictionary *titleDict = [[NSMutableDictionary alloc] init];
-            for (int i=0; i<[_employees count]; i++) {
-                if ([locationDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]]) {
-                    [locationDict setObject:[NSNumber numberWithInteger:[[locationDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]] integerValue]+1] forKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]];
-                } else {
-                    [locationDict setObject:[NSNumber numberWithInteger:1] forKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]];
-                }
-                if ([[_employees objectAtIndex:i] objectForKey:@"title"] != [NSNull null] && [[[_employees objectAtIndex:i] objectForKey:@"title"] length]) {
-                    if ([titleDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"title"]]) {
-                        [titleDict setObject:[NSNumber numberWithInteger:[[titleDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"title"]] integerValue]+1] forKey:[[_employees objectAtIndex:i] objectForKey:@"title"]];
-                    } else {
-                        [titleDict setObject:[NSNumber numberWithInteger:1] forKey:[[_employees objectAtIndex:i] objectForKey:@"title"]];
-                    }
-                }
-            }
-            NSMutableString *statsStr = [[NSMutableString alloc] initWithString:@"\nDirect Reports From:\n\n"];
-            for (id key in locationDict) {
-                [statsStr appendFormat:@"%@ => %@\n\n", [locationDict objectForKey:key], key];
-            }
-            [statsStr appendString:@"\n\nDirect Reports Titles:\n\n"];
-            for (id key in titleDict) {
-                [statsStr appendFormat:@"%@ => %@\n\n", [titleDict objectForKey:key], key];
-            }
-            return statsStr;
-        }
-    }
-    return nil;
-}
+// UX decision: no footers
+//- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
+//    if (_pageType == kEmployeeSearchViewPageTypeDReports && section > 0) {
+//        if ([_employees count]) {
+//            NSMutableDictionary *locationDict = [[NSMutableDictionary alloc] init];
+//            NSMutableDictionary *titleDict = [[NSMutableDictionary alloc] init];
+//            for (int i=0; i<[_employees count]; i++) {
+//                if ([locationDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]]) {
+//                    [locationDict setObject:[NSNumber numberWithInteger:[[locationDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]] integerValue]+1] forKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]];
+//                } else {
+//                    [locationDict setObject:[NSNumber numberWithInteger:1] forKey:[[_employees objectAtIndex:i] objectForKey:@"rhatlocation"]];
+//                }
+//                if ([[_employees objectAtIndex:i] objectForKey:@"title"] != [NSNull null] && [[[_employees objectAtIndex:i] objectForKey:@"title"] length]) {
+//                    if ([titleDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"title"]]) {
+//                        [titleDict setObject:[NSNumber numberWithInteger:[[titleDict objectForKey:[[_employees objectAtIndex:i] objectForKey:@"title"]] integerValue]+1] forKey:[[_employees objectAtIndex:i] objectForKey:@"title"]];
+//                    } else {
+//                        [titleDict setObject:[NSNumber numberWithInteger:1] forKey:[[_employees objectAtIndex:i] objectForKey:@"title"]];
+//                    }
+//                }
+//            }
+//            NSMutableString *statsStr = [[NSMutableString alloc] initWithString:@"\nDirect Reports From:\n\n"];
+//            for (id key in locationDict) {
+//                [statsStr appendFormat:@"%@ => %@\n\n", [locationDict objectForKey:key], key];
+//            }
+//            [statsStr appendString:@"\n\nDirect Reports Titles:\n\n"];
+//            for (id key in titleDict) {
+//                [statsStr appendFormat:@"%@ => %@\n\n", [titleDict objectForKey:key], key];
+//            }
+//            return statsStr;
+//        }
+//    }
+//    return nil;
+//}
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (![_employees count]) {
@@ -346,11 +604,22 @@
     [self.navigationController pushViewController:detailViewController animated:YES];
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (_pageType == kEmployeeSearchViewPageTypeSearch || indexPath.section > 0) {
+        return UITableViewAutomaticDimension;
+    }
+    return 118.0f;
+}
+
 // leaving this for a better solution
 // this is a dummy fix for strange (for now to me) cell height behavior.
 //- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 //    // !!!: WHY? i couldn't find why it changes the height of the cell (even if i set it while creating). :(
-//    return 46.0f;//(indexPath.row == 0)?44.0f:45.0f;
+//    //return 46.0f;//(indexPath.row == 0)?44.0f:45.0f;
+//    UITableViewCell *cell = [self tableView:tableView
+//                      cellForRowAtIndexPath:indexPath];
+//    NSLog(@"Cell Frame: %@", NSStringFromCGRect(cell.bounds));
+//    return cell.bounds.size.height;
 //}
 
 @end

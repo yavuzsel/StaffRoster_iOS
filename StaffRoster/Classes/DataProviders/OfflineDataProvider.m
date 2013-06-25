@@ -225,7 +225,7 @@
 }
 
 - (bool)removeFromEmployeesStore:(id)uidsList {
-    NSArray *employeesInStore = [self getAllData];
+    NSArray *employeesInStore = [[self getAllData] copy];
     bool success = true;
     NSError *error;
     for (id employee in employeesInStore) {

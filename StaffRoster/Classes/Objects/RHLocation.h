@@ -10,4 +10,7 @@
 
 @interface RHLocation : NSObject
 
+@property NSMutableString *locName;
+@property NSMutableArray *employeeList;
+
 @end

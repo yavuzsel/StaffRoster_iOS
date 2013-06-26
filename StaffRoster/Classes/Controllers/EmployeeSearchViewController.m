@@ -72,7 +72,7 @@
         // sort employees by name
         NSSortDescriptor *valueDescriptor = [[NSSortDescriptor alloc] initWithKey:@"cn" ascending:YES];
         NSArray * descriptors = [NSArray arrayWithObject:valueDescriptor];
-        _employees = [_employees sortedArrayUsingDescriptors:descriptors];
+        _employees = [[_employees sortedArrayUsingDescriptors:descriptors] mutableCopy];
         
         self.tableView.rowHeight = 64.0f;
         return;
@@ -82,7 +82,7 @@
     _searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0.0, 0.0, [[UIScreen mainScreen] bounds].size.width, self.tableView.rowHeight)];
     _searchBar.delegate = self;
     _searchBar.tintColor = kAppTintColor;
-    _searchBar.placeholder = @"type name";
+    _searchBar.placeholder = @"type first name";
 	self.tableView.tableHeaderView = _searchBar;
 }
 
@@ -134,7 +134,7 @@
             // !!!: sequential execution cancels loading indicator on slow networks
             // todo fix above should fix this issue too
             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-            _employees = [[OfflineDataProvider sharedInstance] getEmployees:searchText];
+            _employees = [[[OfflineDataProvider sharedInstance] getEmployees:searchText] mutableCopy];
             [self.tableView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
         });
@@ -357,6 +357,7 @@
             
             [sortSection addSubview:buttonContainer];
             [cell addSubview:sortSection];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
         }
         return cell;
     }
@@ -524,19 +525,29 @@
         }
         
         cell.textLabel.text = [employee objectForKey:@"cn"];
-        if (_pageType != kEmployeeSearchViewPageTypeSearch && [employee objectForKey:@"title"] && [[employee objectForKey:@"title"] length]) {
-            cell.detailTextLabel.text = [employee objectForKey:@"title"];
-            // !!!: calling offline data provider each time costs a lot. get rid of it soon. (found a workaround for now)
+        if (_pageType != kEmployeeSearchViewPageTypeSearch) {
+            if ([employee objectForKey:@"title"] && [[employee objectForKey:@"title"] length]) {
+                cell.detailTextLabel.text = [employee objectForKey:@"title"];
+            }
+
+            // !!!: calling offline data provider each time costs a lot. get rid of it soon. (found a workaround for now - still need to lazy load the image url as scrolling for the first time still is not smooth enough)
             // !!!: if img_path does not exist on data provider, should i read from pipe?
             if (!([employee objectForKey:@"profile_image_path"] && [[employee objectForKey:@"profile_image_path"] length])) {
                 id img_path = [[OfflineDataProvider sharedInstance] getProfileImagePath:employee];
+                id employeeToUpdate = [employee mutableCopy];
                 if (img_path) {
-                    [employee setObject:img_path forKey:@"profile_image_path"];
+                    [employeeToUpdate setObject:img_path forKey:@"profile_image_path"];
                 } else {
                     // !!!: a workaround for non-existing profile images. sdwebimage uses strict caching, means if url matches, it always uses the cached copy. so i can leverage on this for my workaround.
                     // here i am NOT modifying the employee on the provider, just placeholding the image url for this VC
-                    [employee setObject:[NSString stringWithFormat:@"%@img/placeholder", kRESTfulBaseURL] forKey:@"profile_image_path"];
+                    [employeeToUpdate setObject:[NSString stringWithFormat:@"%@img/placeholder", kRESTfulBaseURL] forKey:@"profile_image_path"];
                 }
+                if (!_pageSubtypeSortTypeIsLocation) {
+                    [_employees replaceObjectAtIndex:row withObject:employeeToUpdate];
+                } else {
+                    [((RHLocation *)[locBasedSortResult objectAtIndex:(indexPath.section-1)]).employeeList replaceObjectAtIndex:row withObject:employeeToUpdate];
+                }
+                employee = employeeToUpdate;
             }
             [cell.imageView setImageWithURL:[NSURL URLWithString:[employee objectForKey:@"profile_image_path"]] placeholderImage:[UIImage imageNamed:@"StaffAppIcon_HiRes_v2.png"]];
             //[cell.imageView setImageWithURL:[NSURL URLWithString:[[OfflineDataProvider sharedInstance] getProfileImagePath:employee]] placeholderImage:[UIImage imageNamed:@"StaffAppIcon_HiRes_v2.png"]];
@@ -596,10 +607,20 @@
     if (![_employees count]) {
         return;
     }
+    if (_pageType != kEmployeeSearchViewPageTypeSearch && indexPath.section == 0) {
+        return;
+    }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
+    id employee;
+    if (_pageType == kEmployeeSearchViewPageTypeSearch || !_pageSubtypeSortTypeIsLocation) {
+        employee = [_employees objectAtIndex:indexPath.row];
+    } else {
+        employee = [((RHLocation *)[locBasedSortResult objectAtIndex:(indexPath.section-1)]).employeeList objectAtIndex:indexPath.row];
+    }
+    
     StaffDetailTableViewController *detailViewController = [[StaffDetailTableViewController alloc] initWithStyle:UITableViewStyleGrouped];
-    detailViewController.employee = [_employees objectAtIndex:indexPath.row];
+    detailViewController.employee = employee;
     
     [self.navigationController pushViewController:detailViewController animated:YES];
 }

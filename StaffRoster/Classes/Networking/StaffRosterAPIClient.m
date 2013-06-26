@@ -60,11 +60,13 @@ static NSString * const kStaffRosterAPIBaseURLString = kRESTfulBaseURL;
         _syncCheckPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
             [config setName:@"sync_check"];
             [config setEndpoint:@"check_sync_time.php"];
+            //[config setTimeout:300];
         }];
         
         _offlineDataPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
             [config setName:@"sync_employees"];
             [config setEndpoint:@"get_offline_data.php"];
+            [config setTimeout:600]; // this is a lot because ldap query runs so slow :(
         }];
         
         _imageURLPipe = [pipeline pipe:^(id<AGPipeConfig> config) {

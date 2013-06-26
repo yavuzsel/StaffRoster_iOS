@@ -146,7 +146,11 @@
 }
 
 - (NSString *)getProfileImagePath:(id)employee {
-    return [[[self getEmployeesByUID:[employee objectForKey:@"uid"]] objectAtIndex:0] objectForKey:@"profile_image_path"];
+    id employees = [self getEmployeesByUID:[employee objectForKey:@"uid"]];
+    if (employees && [employees count] > 0) {
+        return [[[self getEmployeesByUID:[employee objectForKey:@"uid"]] objectAtIndex:0] objectForKey:@"profile_image_path"];
+    }
+    return nil;
 }
 
 #pragma mark - utility methods

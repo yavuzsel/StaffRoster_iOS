@@ -8,14 +8,19 @@
 
 // AFNetworking
 #define COCOAPODS_POD_AVAILABLE_AFNetworking
-// This library does not follow semantic-versioning,
-// so we were not able to define version macros.
-// Please contact the author.
-// Version: 1.0RC1.
+#define COCOAPODS_VERSION_MAJOR_AFNetworking 1
+#define COCOAPODS_VERSION_MINOR_AFNetworking 3
+#define COCOAPODS_VERSION_PATCH_AFNetworking 1
 
 // AeroGear
 #define COCOAPODS_POD_AVAILABLE_AeroGear
 #define COCOAPODS_VERSION_MAJOR_AeroGear 1
-#define COCOAPODS_VERSION_MINOR_AeroGear 0
-#define COCOAPODS_VERSION_PATCH_AeroGear 1
+#define COCOAPODS_VERSION_MINOR_AeroGear 1
+#define COCOAPODS_VERSION_PATCH_AeroGear 0
+
+// AeroGearPush
+#define COCOAPODS_POD_AVAILABLE_AeroGearPush
+#define COCOAPODS_VERSION_MAJOR_AeroGearPush 1
+#define COCOAPODS_VERSION_MINOR_AeroGearPush 0
+#define COCOAPODS_VERSION_PATCH_AeroGearPush 0
 

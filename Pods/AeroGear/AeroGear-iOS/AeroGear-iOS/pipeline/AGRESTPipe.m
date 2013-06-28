@@ -31,7 +31,7 @@
     // TODO make properties on a PRIVATE category...
     id<AGAuthenticationModuleAdapter> _authModule;
     NSString* _recordId;
-
+    
     AGPipeConfiguration* _config;
     AGPageConfiguration* _pageConfig;
 }
@@ -70,7 +70,13 @@
         
         _restClient = [AGHttpClient clientFor:finalURL timeout:_config.timeout];
         _restClient.parameterEncoding = AFJSONParameterEncoding;
-
+        
+        // if NSURLCredential object is set on the config
+        if (_config.credential) {
+            // apply it
+            [_restClient setDefaultCredential:_config.credential];
+        }
+        
         _pageConfig = [[AGPageConfiguration alloc] init];
         
         // set up paging config from the user supplied block
@@ -96,7 +102,7 @@
     if (endpoint == nil) {
         endpoint = @"";
     }
-
+    
     // append the endpoint name and use it as the final URL
     return [baseURL URLByAppendingPathComponent:endpoint];
 }
@@ -137,7 +143,7 @@
 // read all, via HTTP GET
 -(void) read:(void (^)(id responseObject))success
      failure:(void (^)(NSError *error))failure {
-
+    
     [self readWithParams:nil success:success failure:failure];
 }
 
@@ -146,18 +152,18 @@
 -(void) readWithParams:(NSDictionary*)parameterProvider
                success:(void (^)(id responseObject))success
                failure:(void (^)(NSError *error))failure {
-
+    
     // try to add auth.token:
     [self applyAuthToken];
-
+    
     // if none has been passed, we use the "global" setting
     // which can be the default limit/offset OR what has
     // been configured on the PIPE level.....:
     if (!parameterProvider)
         parameterProvider = _pageConfig.parameterProvider;
-
+    
     [_restClient getPath:_URL.path parameters:parameterProvider success:^(AFHTTPRequestOperation *operation, id responseObject) {
-
+        
         NSMutableArray* pagingObject;
         
         if ([responseObject isKindOfClass:[NSDictionary class]]) {
@@ -165,13 +171,13 @@
         } else {
             pagingObject = (NSMutableArray*) [responseObject mutableCopy];
         }
-
+        
         // stash pipe reference:
         pagingObject.pipe = self;
         pagingObject.parameterProvider = [_pageConfig.pageExtractor parse:responseObject
-                                                               headers:[[operation response] allHeaderFields]
-                                                                  next:_pageConfig.nextIdentifier
-                                                                  prev:_pageConfig.previousIdentifier];
+                                                                  headers:[[operation response] allHeaderFields]
+                                                                     next:_pageConfig.nextIdentifier
+                                                                     prev:_pageConfig.previousIdentifier];
         if (success) {
             //TODO: NSLog(@"Invoking successblock....");
             success(pagingObject);

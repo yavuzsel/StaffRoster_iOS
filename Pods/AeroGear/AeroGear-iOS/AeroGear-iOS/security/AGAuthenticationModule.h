@@ -41,14 +41,14 @@ The ```enroll``` function of the _AGAuthenticationModule_ protocol is used to re
         NSLog(@"SAVE: An error occured! \n%@", error);
     }];
 
-The ```enroll``` function submits a generic map object with contains all the information about the new user, that the server endpoint requires. The default (REST) auth module issues for the above a request against _https://todo-aerogear.rhcloud.com/todo-server/auth/enroll_. Besides the NSDictionary, the function accepts two simple blocks that are invoked on success or in case of an failure.
+The ```enroll``` function submits a generic map object which contains all the information about the new user, that the server endpoint requires. The default (REST) auth module issues for the above, a request against _https://todo-aerogear.rhcloud.com/todo-server/auth/enroll_. Besides the NSDictionary, the function accepts two simple blocks that are invoked on success or in case of an failure.
 
 ## Login 
 
 Once you have a _valid_ user you can use that information to issue a login against the server, to start accessing protected endpoints:
 
     // issuing a login
-    [myMod login:@"john" password:@"123" success:^(id object) {
+    [myMod login:@{@"username": @"john", @"password": @"123"} success:^(id object) {
         // after a successful _login_, we can work
         // with the returned data...
     } failure:^(NSError *error) {
@@ -56,7 +56,9 @@ Once you have a _valid_ user you can use that information to issue a login again
         NSLog(@"SAVE: An error occured! \n%@", error);
     }];
 
-The default (REST) auth module issues for the above a request against _https://todo-aerogear.rhcloud.com/todo-server/auth/login_. Besides the _username_ and the _password_, the function accepts two simple blocks that are invoked on success or in case of an failure.
+The ```login``` function submits a generic map object which contains the credentials that the server login service requires and accepts two simple blocks that are invoked on success or in case of a failure to login.
+ 
+The default (REST) auth module issues for the above, a request against _https://todo-aerogear.rhcloud.com/todo-server/auth/login
 
 ## Pass the auth module to a pipe
 
@@ -140,11 +142,13 @@ As with the case of Pipe, configured timeout interval (in the config object) and
  * This block has no return value and takes one argument: The `NSError` object describing
  * the error that occurred.
  */
--(void) enroll:(id) userData
+-(void) enroll:(NSDictionary*) userData
      success:(void (^)(id object))success
      failure:(void (^)(NSError *error))failure;
 
 /**
+ * DEPREACTED.
+ *
  * Performs the login for the given user. Since the data will be sent in plaintext, it is IMPORTANT,
  * to run the signin via TLS/HTTPS.
  *
@@ -160,8 +164,28 @@ As with the case of Pipe, configured timeout interval (in the config object) and
  * This block has no return value and takes one argument: The `NSError` object describing
  * the error that occurred.
  */
+
 -(void) login:(NSString*) username
-    password:(NSString*) password
+     password:(NSString*) password
+      success:(void (^)(id object))success
+      failure:(void (^)(NSError *error))failure;
+
+/**
+ * Performs the login for the given user. Since the data will be sent in plaintext, it is IMPORTANT,
+ * to run the signin via TLS/HTTPS.
+ *
+ * @param loginData A map (NSDictionary) containing the credentials required by the
+ * 'log in' service.
+ *
+ * @param success A block object to be executed when the operation finishes successfully.
+ * This block has no return value and takes one argument: A collection (NSDictionary), containing the response
+ * from the 'login' service.
+ *
+ * @param failure A block object to be executed when the operation finishes unsuccessfully.
+ * This block has no return value and takes one argument: The `NSError` object describing
+ * the error that occurred.
+ */
+-(void) login:(NSDictionary*) loginData
      success:(void (^)(id object))success
      failure:(void (^)(NSError *error))failure;
 

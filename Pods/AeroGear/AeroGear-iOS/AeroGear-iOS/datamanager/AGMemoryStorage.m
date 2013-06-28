@@ -144,6 +144,10 @@
     return YES;
 }
 
+-(BOOL) isEmpty {
+    return (_array.count ==0);
+}
+
 -(BOOL) remove:(id)record error:(NSError**)error {
     // check if null is provided and throw error
     if (record == nil || [record isKindOfClass:[NSNull class]]) {

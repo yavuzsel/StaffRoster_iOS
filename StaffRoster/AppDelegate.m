@@ -11,6 +11,7 @@
 #import "OfflineDataProvider.h"
 #import "StaffDetailTableViewController.h"
 #import "StaffRosterAPIClient.h"
+#import <AeroGearPush.h>
 
 @implementation AppDelegate
 
@@ -44,7 +45,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
     
     UINavigationController *profileNavigation = [[UINavigationController alloc] initWithRootViewController:profileViewController];
     profileNavigation.navigationBar.tintColor = kAppTintColor;
-    profileNavigation.tabBarItem = [[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemContacts tag:1];
+    profileNavigation.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"My Profile" image:[UIImage imageNamed:@"profile.png"] tag:0];//[[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemContacts tag:1];
 
     
     UITabBarController *tabBarController = [[UITabBarController alloc] init];
@@ -56,13 +57,82 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 
     [self.window makeKeyAndVisible];
     
-    
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    // even if the read from pipe is already async, this call requires to read from datastore which is not async. so dispatch a thread and execute there.
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         [[OfflineDataProvider sharedInstance] syncDataProvider];
         //NSLog(@"Data: %@", [[OfflineDataProvider sharedInstance] getAllData]);
     });
     
     return YES;
+}
+
+// Here we need to register this "Mobile Variant Instance"
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    
+    // we init our "Registration helper:
+    AGDeviceRegistration *registration =
+    
+    // WARNING: make sure, you start JBoss with the -b 0.0.0.0 option, to bind on all interfaces
+    // from the iPhone, you can NOT use localhost :)
+    [[AGDeviceRegistration alloc] initWithServerURL:[NSURL URLWithString:@"http://10.193.23.8:8080/ag-push/"]];
+    
+    [registration registerWithClientInfo:^(id<AGClientDeviceInformation> clientInfo) {
+        
+        // Use the Mobile Variant ID, from your register iOS Variant
+        //
+        // This ID was received when performing the HTTP-based registration
+        // with the PushEE server:
+        [clientInfo setMobileVariantID:@"55e465ce-cc52-4b77-a0ad-468420e3e985"];
+        [clientInfo setMobileVariantSecret:@"a5d0232b-0cd1-4936-a908-1e76e11e5091"];
+        
+        
+        // apply the token, to identify THIS device
+        [clientInfo setDeviceToken:deviceToken];
+        
+        // alias is employee uid, we will use it to filter push broadcasts based on employee fields
+        [clientInfo setAlias:kDefaultAppUserUID];
+        
+        // --optional config--
+        // set some 'useful' hardware information params
+        UIDevice *currentDevice = [UIDevice currentDevice];
+        
+        [clientInfo setOperatingSystem:[currentDevice systemName]];
+        [clientInfo setOsVersion:[currentDevice systemVersion]];
+        [clientInfo setDeviceType: [currentDevice model]];
+        
+    } success:^() {
+        //
+        NSLog(@"Device successfully registered to push server");
+    } failure:^(NSError *error) {
+        // did receive an HTTP error from the PushEE server ???
+        // Let's log it for now:
+        NSLog(@"PushEE registration Error: %@", error);
+    }];
+}
+
+// There was an error with connecting to APNs or receiving an APNs generated token for this phone!
+- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+    // something went wrong, while talking to APNs
+    // Let's simply log it for now...:
+    NSLog(@"APNs Error: %@", error);
+}
+
+// When the program is active, this callback receives the Payload of the Push Notification message
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+    // A JSON object is received, represented as a NSDictionary.
+    // use it to pick your custom key
+    
+    // For demo reasons, we simply read the "alert" key, from the "aps" dictionary:
+    NSString *alertValue = [userInfo valueForKeyPath:@"aps.alert"];
+    
+    
+    UIAlertView *alert = [[UIAlertView alloc]
+                          initWithTitle: @"Custom Dialog, while Program is active"
+                          message: alertValue
+                          delegate: nil
+                          cancelButtonTitle:@"OK"
+                          otherButtonTitles:nil];
+    [alert show];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
@@ -85,6 +155,11 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    
+    // here if the badge icon is set, we know that a push message was arrived (as there is no delegate called if user simply ignores the notification, we can use this badge count as an indication of push message arrival)
+//    [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+//    
+//    [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application

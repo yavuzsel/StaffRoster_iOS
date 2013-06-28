@@ -52,12 +52,13 @@
     if (!employee || ![employee count]) {
         return nil;
     }
+    NSLog(@"GM: %@", employee);
     if (![[[employee objectAtIndex:0] objectForKey:@"manager"] length]) {
         // sb doesn't have a manager. CEO?
         return nil;
     }
     // this is so dependent on manager field format. make sure this works if it changes.
-    return [self getEmployeesByUID:[[[[[[employee objectAtIndex:0] objectForKey:@"manager"] componentsSeparatedByString:@","] objectAtIndex:0] componentsSeparatedByString:@"="] objectAtIndex:1]];
+    return [self getEmployeesByUID:[[employee objectAtIndex:0] objectForKey:@"manager"]];
 }
 
 - (NSArray *)getColleagues:(NSString *)query {
@@ -80,7 +81,7 @@
     if (!employee || ![employee count]) {
         return nil;
     }
-    return [[self getEmployeesDataStore] filter:[NSPredicate predicateWithFormat:@"manager = %@", [NSString stringWithFormat:@"uid=%@,%@", [[employee objectAtIndex:0] objectForKey:@"uid"], kManagerFilterFields]]];
+    return [[self getEmployeesDataStore] filter:[NSPredicate predicateWithFormat:@"manager = %@", [[employee objectAtIndex:0] objectForKey:@"uid"]]];
 }
 
 - (NSInteger)getDReportsCount:(NSString *)query {
@@ -97,7 +98,7 @@
     [[StaffRosterAPIClient sharedInstance].syncCheckPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"last_sync_date": [self getLastSyncTime]}] success:^(id responseObject) {
         NSLog(@"Sync response obj: %@", responseObject);
         if ([[[responseObject objectAtIndex:0] objectForKey:@"sync_required"] isEqual:@"true"]) {
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
                 [self reloadEmployeeDataStore];
             });
         } else {
@@ -112,23 +113,29 @@
 }
 
 - (void)reloadEmployeeDataStore {
-    // read with sync time from this pipe too to receive only the new updates. sync_time = 0 -> readAll
+    // read with sync time from offline data pipe to receive only the new updates. sync_time = 0 -> readAll
     [[StaffRosterAPIClient sharedInstance].offlineDataPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"last_sync_date": [self getLastSyncTime]}] success:^(id responseObject) {
-        // update table with the newly fetched data
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            NSLog(@"Offline Data: %@", responseObject);
-            // if save is interrupted, same data will be downloaded again and again until the success is timestamped.
-            // is it the best solution?
-            if([self saveToEmployeesStore:[[responseObject objectAtIndex:0] objectForKey:@"records"]]) {
-                // everything is successful, so timestamp last sync time
-                // !!!: what if there is a new update on server side between syncCheckTime (send req through syncCheckPipe) and syncCompleteTime (update local data store - i.e now)?
-                [self setLastSyncTimeToNow];
-                // remove uids --- best effort?
-                if([self removeFromEmployeesStore:[[responseObject objectAtIndex:0] objectForKey:@"uids"]]) {
-                    NSLog(@"Reload Completed Successfully!!!");
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+            //NSLog(@"Offline Data: %@", responseObject);
+            // can response be null? let's check!
+            if (![responseObject isEqual:[NSNull null]] && [responseObject count]) {
+                // if save is interrupted, same data will be downloaded again and again until the success is timestamped.
+                // is it the best solution?
+                if([self saveToEmployeesStore:[[responseObject objectAtIndex:0] objectForKey:@"records"]]) {
+                    // everything is successful, so timestamp last sync time
+                    // !!!: what if there is a new update on server side between syncCheckTime (send req through syncCheckPipe) and syncCompleteTime (update local data store - i.e now)?
+                    [self setLastSyncTimeToNow];
+                    // remove uids --- best effort?
+                    if([self removeFromEmployeesStore:[[responseObject objectAtIndex:0] objectForKey:@"uids"]]) {
+                        NSLog(@"Reload Completed Successfully!!!");
+                    } else {
+                        NSLog(@"Reload Completed (Remove Error)!!!");
+                    }
                 } else {
-                    NSLog(@"Reload Completed (Remove Error)!!!");
+                    NSLog(@"Save error occured while reloading!!!");
                 }
+            } else {
+                NSLog(@"Reload error!!! Offline data response is empty!!!");
             }
         });
     } failure:^(NSError *error) {
@@ -140,9 +147,13 @@
 // we might need to remove this stuff soon (image part is still under heavy development)
 
 - (bool)setProfileImagePath:(NSString *)imgPath toEmployee:(id)employee {
-    id employeeToSave = [employee mutableCopy];
-    [employeeToSave setObject:imgPath forKey:@"profile_image_path"];
-    return [self saveToEmployeesStore:[NSArray arrayWithObject:employeeToSave]];
+    id employeesToSave = [self getEmployeesByUID:[employee objectForKey:@"uid"]];
+    if (employeesToSave && [employeesToSave count]) {
+        id employeeToSave = [employeesToSave objectAtIndex:0];
+        [employeeToSave setObject:imgPath forKey:@"profile_image_path"];
+        return [self saveToEmployeesStore:[NSArray arrayWithObject:employeeToSave]];
+    }
+    return false;
 }
 
 - (NSString *)getProfileImagePath:(id)employee {
@@ -164,8 +175,9 @@
 }
 
 - (NSString *)getLastSyncTime {
-    if ([[self getSyncTimeDataStore] read:@"1"]) {
-        return [[NSString alloc] initWithFormat:@"%@", [[[self getSyncTimeDataStore] read:@"1"] objectForKey:@"last_sync_time"]];
+    id syncTime = [[self getSyncTimeDataStore] read:@"1"];
+    if (syncTime) {
+        return [[NSString alloc] initWithFormat:@"%@", [syncTime objectForKey:@"last_sync_time"]];
     } else {
         return @"0";
     }
@@ -182,7 +194,7 @@
     }];
 }
 
-- (NSArray *)getEmployeesByUID:(NSString *)uid { // yes, it is employee"s" to indicate it returns an array of employees (which actually contains a single employee)
+- (NSArray *)getEmployeesByUID:(NSString *)uid { // yes, it is employee"s" to indicate it returns an array of employees (which actually contains a single employee). i could return the employee???
     return [[self getEmployeesDataStore] filter:[NSPredicate predicateWithFormat:@"uid = %@", uid]];
 }
 
@@ -197,35 +209,43 @@
 
 // use with caution!!!
 - (bool)resetEmployeesStore {
-    NSError *error;
-    if(![[self getEmployeesDataStore] reset:&error]){
-        NSLog(@"Store Reset Error: %@", error);
-        return false;
+    @synchronized(self){
+        NSError *error;
+        if(![[self getEmployeesDataStore] reset:&error]){
+            NSLog(@"Store Reset Error: %@", error);
+            return false;
+        }
+        return true;
     }
-    return true;
 }
 
 - (bool)saveToEmployeesStore:(id)recordsList {
     NSMutableArray *employeesToAdd = [[NSMutableArray alloc] init];
     NSArray *unNullifiedResponse = [self unNullifyResponse:recordsList];
     NSInteger lastID = [[self getLastID] integerValue];
+    NSArray *employeesInDataStore;
+    NSMutableDictionary *employeeToSave;
     for (NSDictionary *employee in unNullifiedResponse) {
-        NSArray *employeesInDataStore = [self getEmployeesByUID:[employee objectForKey:@"uid"]];
-        NSMutableDictionary *employeeToSave = [employee mutableCopy];
-        if ([employeesInDataStore count]) {
+        employeesInDataStore = [self getEmployeesByUID:[employee objectForKey:@"uid"]];
+        employeeToSave = [employee mutableCopy];
+        if ([employeesInDataStore count]) { // if employee is already in the datastore, use same id to overwrite
             [employeeToSave setValue:[[employeesInDataStore objectAtIndex:0] objectForKey:@"id"] forKey:@"id"];
         } else {
             [employeeToSave setValue:[[NSString alloc] initWithFormat:@"%d", ++lastID] forKey:@"id"];
         }
         [employeesToAdd addObject:employeeToSave];
     }
-    NSLog(@"Save: %@", employeesToAdd);
-    NSError *error;
-    if (![[self getEmployeesDataStore] save:employeesToAdd error:&error]){
-        NSLog(@"Save: An error occured during save! \n%@", error);
-        return false;
+    
+    // make store saving thread safe
+    @synchronized(self){
+        //NSLog(@"Save: %@", employeesToAdd);
+        NSError *error;
+        if (![[self getEmployeesDataStore] save:employeesToAdd error:&error]){
+            NSLog(@"Save: An error occured during save! \n%@", error);
+            return false;
+        }
+        return true;
     }
-    return true;
 }
 
 - (bool)removeFromEmployeesStore:(id)uidsList {
@@ -236,15 +256,18 @@
         //NSLog(@"employee: %@", employee);
         if (![uidsList containsObject:[employee objectForKey:@"uid"]]) {
             NSLog(@"Removing: %@", employee);
-            if(![[self getEmployeesDataStore] remove:employee error:&error]) {
-                NSLog(@"Remove: An error occured during remove! \n%@", error);
-                success = false;
+            @synchronized(self){
+                if(![[self getEmployeesDataStore] remove:employee error:&error]) {
+                    NSLog(@"Remove: An error occured during remove! \n%@", error);
+                    success = false;
+                }
             }
         }
     }
     return success;
 }
 
+// !!!: this is no longer doing a simple unnullification. we are having problem with manager field which has "=" and "," in it. couldn't configure the cause, as it does work sometimes and doesn't work some other times. getting the uid of manager instead of storing the manager field.
 - (NSArray *)unNullifyResponse:(NSArray *)response {
     NSMutableArray *unNulledResponse = [[NSMutableArray alloc] init];
     NSMutableDictionary *employeeToUnNullify;
@@ -254,6 +277,13 @@
             if ([[employeeToUnNullify objectForKey:key] isEqual:[NSNull null]]) {
                 [employeeToUnNullify setObject:[[NSData alloc] init] forKey:key];
             }
+        }
+        // !!!: get uid of manager. so much dependent on the manager field structure.
+        if ([employeeToUnNullify objectForKey:@"manager"] && [[employeeToUnNullify objectForKey:@"manager"] length]) {
+            id managerFields = [[[employeeToUnNullify objectForKey:@"manager"] copy] componentsSeparatedByString:@","];
+            if ([managerFields count] > 1) {
+                [employeeToUnNullify setObject:[[[managerFields objectAtIndex:0] componentsSeparatedByString:@"="] objectAtIndex:1] forKey:@"manager"];
+            } // else the employee is a copy taken from datastore, so keep manager field as it is
         }
         [unNulledResponse addObject:employeeToUnNullify];
     }

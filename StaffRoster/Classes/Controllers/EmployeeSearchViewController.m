@@ -18,7 +18,9 @@
 @implementation EmployeeSearchViewController {
     UISearchBar *_searchBar;
     bool _load_mutex;
+    bool _is_search_cancelled;
     NSMutableArray *locBasedSortResult;
+    UITapGestureRecognizer *tapGesture;
 }
 
 @synthesize employees = _employees;
@@ -28,11 +30,14 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(popToRoot:)];
     
     if (!_pageType) {
         // default to search page
         _pageType = kEmployeeSearchViewPageTypeSearch;
+    }
+    
+    if (_pageType == kEmployeeSearchViewPageTypeSearch) {
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(popToRoot:)];
     }
     
     _pageSubtypeSortTypeIsLocation = false;
@@ -68,6 +73,7 @@
     self.navigationItem.title = titleText;
     
     _load_mutex = true;
+    
     if (_pageType != kEmployeeSearchViewPageTypeSearch) {
         // sort employees by name
         NSSortDescriptor *valueDescriptor = [[NSSortDescriptor alloc] initWithKey:@"cn" ascending:YES];
@@ -79,11 +85,15 @@
     }
     self.tableView.rowHeight = 44.0f;
     
+    tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapFrom:)];
+    
     _searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0.0, 0.0, [[UIScreen mainScreen] bounds].size.width, self.tableView.rowHeight)];
     _searchBar.delegate = self;
     _searchBar.tintColor = kAppTintColor;
     _searchBar.placeholder = @"type first name";
 	self.tableView.tableHeaderView = _searchBar;
+    
+    _is_search_cancelled = false;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -98,43 +108,100 @@
     [self.navigationController popToRootViewControllerAnimated:YES];
 }
 
+// hide keyboard when scrolling on the tableview begins
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+    [_searchBar resignFirstResponder];
+    _searchBar.showsCancelButton = NO;
+    [self.tableView removeGestureRecognizer:tapGesture];
+}
+
+// tap gesture is resigning the keyboard when search results are not there
+- (void)handleTapFrom:(id)sender {
+    [self.tableView removeGestureRecognizer:tapGesture];
+    [_searchBar resignFirstResponder];
+    _searchBar.showsCancelButton = NO;
+}
+
 #pragma mark - UISearchBar delegate methods
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
     searchBar.showsCancelButton = YES;
+    if (![_employees count]) {
+        [self.tableView addGestureRecognizer:tapGesture];
+    }
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
     if ([searchText length] < 3) {
+        _is_search_cancelled = true;
         [[StaffRosterAPIClient sharedInstance].employeesPipe cancel];
-        _employees = nil;
+        @synchronized(self){
+            _employees = nil;
+        }
         [self.tableView reloadData];
         [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        [self.tableView addGestureRecognizer:tapGesture];        
         return;
     }
+    _is_search_cancelled = false;
     if (!_load_mutex) {
         return;
     }
     _load_mutex = false;
+    [self.tableView removeGestureRecognizer:tapGesture];
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
     // cancel previous queries
     [[StaffRosterAPIClient sharedInstance].employeesPipe cancel];
     // fetch the new data
     [[StaffRosterAPIClient sharedInstance].employeesPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"query": searchText}] success:^(id responseObject) {
-        _employees = responseObject;
-        NSLog(@"Response obj: %@", responseObject);
-        // update table with the newly fetched data
-        [self.tableView reloadData];
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        
+        // sorting takes time, so do 
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSLog(@"Response obj: %@", responseObject);
+            if (_is_search_cancelled) {
+                return;
+            }
+            @synchronized(self){
+                _employees = responseObject;
+                if (!_employees.count) {
+                    [self.tableView addGestureRecognizer:tapGesture];
+                } else {
+                    // sort employees by name
+                    NSSortDescriptor *valueDescriptor = [[NSSortDescriptor alloc] initWithKey:@"cn" ascending:YES];
+                    NSArray * descriptors = [NSArray arrayWithObject:valueDescriptor];
+                    _employees = [[_employees sortedArrayUsingDescriptors:descriptors] mutableCopy];
+                }
+            }
+            [self.tableView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
+            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        });
     } failure:^(NSError *error) {
         NSLog(@"An error has occured during read! \n%@", error);
         // reading from offlinedataprovider takes time on some devices, do async
         // TODO: make sure that sequential read request responses will be executed in the same order
+        // when it is put in the same priority queue, it starts executing sequentially, but on multicore devices, execution time and presenting the results vary
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            // !!!: the execution of the thread (even if i set priority appropriately) has some delay causes empty list to be filled again.
+            // in order to avoid, i am using a flag here. search cancelled means there should not be any employee in the list. (searchText.length < 3)
+            if (_is_search_cancelled) {
+                return;
+            }
             // !!!: sequential execution cancels loading indicator on slow networks
             // todo fix above should fix this issue too
             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-            _employees = [[[OfflineDataProvider sharedInstance] getEmployees:searchText] mutableCopy];
+            @synchronized(self){
+                // read synchronized to make sure each search request evaluates sequentially (adresses to the "todo" above)
+                _employees = [[[OfflineDataProvider sharedInstance] getEmployees:searchText] mutableCopy];
+                
+                if (!_employees.count) {
+                    [self.tableView addGestureRecognizer:tapGesture];
+                } else {
+                    // sort employees by name
+                    NSSortDescriptor *valueDescriptor = [[NSSortDescriptor alloc] initWithKey:@"cn" ascending:YES];
+                    NSArray * descriptors = [NSArray arrayWithObject:valueDescriptor];
+                    _employees = [[_employees sortedArrayUsingDescriptors:descriptors] mutableCopy];
+                }
+            }
             [self.tableView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
         });
@@ -145,6 +212,7 @@
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
     [searchBar resignFirstResponder];
     searchBar.showsCancelButton = NO;
+    [self.tableView removeGestureRecognizer:tapGesture];
 }
 
 - (void)viewDidUnload {
@@ -234,7 +302,7 @@
     // but it is more costly that setting them on create
     // so search cells are not customized and not set here
     if (_pageType != kEmployeeSearchViewPageTypeSearch && indexPath.section > 0) {
-        cell.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"pipe.png"]];
+        cell.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"pipe_long.png"]];
         cell.detailTextLabel.backgroundColor = [UIColor clearColor];
         cell.textLabel.backgroundColor = [UIColor clearColor];
     }
@@ -495,7 +563,7 @@
     if (![_employees count]) {
         switch (_pageType) {
             case kEmployeeSearchViewPageTypeSearch:
-                cell.textLabel.text = @"search employees by name";
+                cell.textLabel.text = @"search employees by first name";
                 break;
                 
             case kEmployeeSearchViewPageTypeColleagues:
@@ -526,7 +594,7 @@
         
         cell.textLabel.text = [employee objectForKey:@"cn"];
         if (_pageType != kEmployeeSearchViewPageTypeSearch) {
-            if ([employee objectForKey:@"title"] && [[employee objectForKey:@"title"] length]) {
+            if ([employee objectForKey:@"title"] && ![[employee objectForKey:@"title"] isEqual:[NSNull null]] && [[employee objectForKey:@"title"] length]) {
                 cell.detailTextLabel.text = [employee objectForKey:@"title"];
             }
 
@@ -542,6 +610,7 @@
                     // here i am NOT modifying the employee on the provider, just placeholding the image url for this VC
                     [employeeToUpdate setObject:[NSString stringWithFormat:@"%@img/placeholder", kRESTfulBaseURL] forKey:@"profile_image_path"];
                 }
+                // !!!: modifying the data source? check if this is safe.
                 if (!_pageSubtypeSortTypeIsLocation) {
                     [_employees replaceObjectAtIndex:row withObject:employeeToUpdate];
                 } else {
@@ -610,7 +679,7 @@
     if (_pageType != kEmployeeSearchViewPageTypeSearch && indexPath.section == 0) {
         return;
     }
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
     
     id employee;
     if (_pageType == kEmployeeSearchViewPageTypeSearch || !_pageSubtypeSortTypeIsLocation) {

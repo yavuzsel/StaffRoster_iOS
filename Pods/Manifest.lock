@@ -1,13 +1,22 @@
 PODS:
-  - AeroGear (1.0.1):
-    - AFNetworking (= 1.0RC1)
-  - AFNetworking (1.0RC1)
+  - AeroGear (1.1.0):
+    - AFNetworking (= 1.3.1)
+  - AeroGearPush (1.0.0):
+    - AFNetworking (= 1.3.1)
+  - AFNetworking (1.3.1)
 
 DEPENDENCIES:
-  - AeroGear
+  - AeroGear (= 1.1.0)
+  - AeroGearPush (from `https://github.com/matzew/aerogear-push-ios-registration.git`, branch `security`)
+
+EXTERNAL SOURCES:
+  AeroGearPush:
+    :branch: security
+    :git: https://github.com/matzew/aerogear-push-ios-registration.git
 
 SPEC CHECKSUMS:
-  AeroGear: 03d53062a6f6e8453ec000c70165c64f66e78721
-  AFNetworking: b21c1252d437fd322e7db1caa93b163d76a362cb
+  AeroGear: 52a88620bf5b188e9cfe1cedf971365ad18dcdff
+  AeroGearPush: 4a6a2f0f4e1d92222c445701a9272aa2e8ad21d4
+  AFNetworking: 9ec8aafb9269236a7630bd8d9838ce2ba30fa2a0
 
 COCOAPODS: 0.19.1

@@ -51,8 +51,24 @@
 @property (assign, nonatomic) NSTimeInterval timeout;
 
 /**
+ * The NSURLCredential to use if the request requires authentication.
+*
+ * The credential is used during the authentication challenge to a remote
+ * server that supports HTTP Basic and HTTP Digest authentication.
+ *
+ * Note: Care should be taken when specifying the persistence type param
+ *       when constructing the NSURLCredential object. Specifying type other than
+ *       [NSURLCredentialPersistenceNone](http://tinyurl.com/q28l9hd), will have the
+ *       effect of the credentials to be preserved across session and application restarts.
+ *       In that case, the developer is responsible to clear the cache.
+ *       See [NSURLCredentialStorage](http://tinyurl.com/n9amy5q) class reference
+ *       for more information.
+ */
+@property (strong, nonatomic) NSURLCredential *credential;
+
+/**
  * A block specifying paging configuration for this Pipe.
- * See AGPageConfig and for the available paging configuration parameters 
+ * See AGPageConfig and for the available paging configuration parameters
  * and category AGNSMutableArray(Paging) for example usage.
  */
 @property (copy, nonatomic) void (^pageConfig)(id<AGPageConfig>);

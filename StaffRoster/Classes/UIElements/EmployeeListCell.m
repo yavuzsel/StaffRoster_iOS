@@ -32,7 +32,11 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    self.imageView.frame = CGRectMake(16,14,48,36);
+    if (self.frame.size.height == 64) { // inset the profile image and fix the label positioning problem (when not in search view -> height == 64)
+        self.imageView.frame = CGRectMake(16,14,48,36);
+        self.textLabel.frame = CGRectMake(74,13,[UIScreen mainScreen].bounds.size.width-110,22);
+        self.detailTextLabel.frame = CGRectMake(74,35,[UIScreen mainScreen].bounds.size.width-110,18);
+    }
 }
 
 @end

@@ -16,7 +16,7 @@ Some basic usages are documented [here](http://aerogear.org/docs/guides/iOSCookb
 
 ## Getting started
 
-Open the [AeroGear-iOS.xcworkspace](AeroGear-iOS/AeroGear-iOS.xcworkspace) in Xcode, if you want to get the project...
+Open the _AeroGear-iOS.xcworkspace_ in Xcode, if you want to get the project...
 
 ## Tutorial
 

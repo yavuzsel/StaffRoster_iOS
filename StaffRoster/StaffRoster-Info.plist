@@ -14,8 +14,6 @@
 		<dict>
 			<key>CFBundleIconFiles</key>
 			<array>
-				<string>StaffAppIcon.png</string>
-				<string>StaffAppIcon_HiRes.png</string>
 				<string>StaffAppIcon_v2.png</string>
 				<string>StaffAppIcon_HiRes_v2.png</string>
 			</array>

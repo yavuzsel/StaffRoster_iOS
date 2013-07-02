@@ -7,12 +7,11 @@ PODS:
 
 DEPENDENCIES:
   - AeroGear (= 1.1.0)
-  - AeroGearPush (from `https://github.com/matzew/aerogear-push-ios-registration.git`, branch `security`)
+  - AeroGearPush (from `https://github.com/aerogear/aerogear-push-ios-registration.git`)
 
 EXTERNAL SOURCES:
   AeroGearPush:
-    :branch: security
-    :git: https://github.com/matzew/aerogear-push-ios-registration.git
+    :git: https://github.com/aerogear/aerogear-push-ios-registration.git
 
 SPEC CHECKSUMS:
   AeroGear: 52a88620bf5b188e9cfe1cedf971365ad18dcdff

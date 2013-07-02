@@ -27,6 +27,7 @@
 - (void)syncDataProvider;
 
 - (NSArray *)getAllData;
+- (bool)isDataExist;
 
 - (bool)setProfileImagePath:(NSString *)imgPath toEmployee:(id)employee;
 - (NSString *)getProfileImagePath:(id)employee;

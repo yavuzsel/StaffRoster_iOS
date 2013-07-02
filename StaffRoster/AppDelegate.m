@@ -74,7 +74,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
     
     // WARNING: make sure, you start JBoss with the -b 0.0.0.0 option, to bind on all interfaces
     // from the iPhone, you can NOT use localhost :)
-    [[AGDeviceRegistration alloc] initWithServerURL:[NSURL URLWithString:@"http://10.193.23.8:8080/ag-push/"]];
+    [[AGDeviceRegistration alloc] initWithServerURL:[NSURL URLWithString:kAGPushServerURL]];
     
     [registration registerWithClientInfo:^(id<AGClientDeviceInformation> clientInfo) {
         
@@ -82,8 +82,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
         //
         // This ID was received when performing the HTTP-based registration
         // with the PushEE server:
-        [clientInfo setMobileVariantID:@"55e465ce-cc52-4b77-a0ad-468420e3e985"];
-        [clientInfo setMobileVariantSecret:@"a5d0232b-0cd1-4936-a908-1e76e11e5091"];
+        [clientInfo setMobileVariantID:kMobileVariantID];
+        [clientInfo setMobileVariantSecret:kMobileVariantSecret];
         
         
         // apply the token, to identify THIS device
@@ -127,7 +127,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
     
     
     UIAlertView *alert = [[UIAlertView alloc]
-                          initWithTitle: @"Custom Dialog, while Program is active"
+                          initWithTitle: @"Push Message Received"
                           message: alertValue
                           delegate: nil
                           cancelButtonTitle:@"OK"

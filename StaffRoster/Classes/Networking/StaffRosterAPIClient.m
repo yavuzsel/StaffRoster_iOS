@@ -5,6 +5,7 @@
 //
 
 #import "StaffRosterAPIClient.h"
+#import "OfflineDataProvider.h"
 
 static NSString * const kStaffRosterAPIBaseURLString = kRESTfulBaseURL;
 
@@ -39,22 +40,34 @@ static NSString * const kStaffRosterAPIBaseURLString = kRESTfulBaseURL;
         _employeesPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
             [config setName:@"employees"];
             [config setEndpoint:@"get_data_simple.php"];
+            if ([[OfflineDataProvider sharedInstance] isDataExist]) { // if data is sync (does not have to be up to date), don't hang too much to get the data from the pipe.
+                [config setTimeout:3];
+            }
         }];
         
         // ...any other pipes
         _managerPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
             [config setName:@"manager"];
             [config setEndpoint:@"get_manager.php"];
+            if ([[OfflineDataProvider sharedInstance] isDataExist]) {
+                [config setTimeout:3];
+            }
         }];
         
         _colleaguesPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
             [config setName:@"colleagues"];
             [config setEndpoint:@"get_colleagues.php"];
+            if ([[OfflineDataProvider sharedInstance] isDataExist]) {
+                [config setTimeout:3];
+            }
         }];
         
         _dreportsPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
             [config setName:@"dreports"];
             [config setEndpoint:@"get_dreports.php"];
+            if ([[OfflineDataProvider sharedInstance] isDataExist]) {
+                [config setTimeout:3];
+            }
         }];
         
         _syncCheckPipe = [pipeline pipe:^(id<AGPipeConfig> config) {

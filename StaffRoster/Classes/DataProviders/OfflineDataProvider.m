@@ -164,6 +164,10 @@
     return nil;
 }
 
+- (bool)isDataExist {
+    return (!([[self getLastSyncTime] isEqual:@"0"]));
+}
+
 #pragma mark - utility methods
 
 - (id<AGStore>)getEmployeesDataStore {

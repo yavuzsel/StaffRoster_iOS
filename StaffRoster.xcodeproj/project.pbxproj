@@ -545,7 +545,8 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Yavuz Selim YILMAZ (459NNU37B5)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Yavuz Selim YILMAZ (459NNU37B5)";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -560,6 +561,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
 				ONLY_ACTIVE_ARCH = YES;
+				PROVISIONING_PROFILE = "53CB0643-310E-4703-8938-EEB8FF80E849";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "53CB0643-310E-4703-8938-EEB8FF80E849";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -576,7 +579,8 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Yavuz Selim YILMAZ (459NNU37B5)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Yavuz Selim YILMAZ (459NNU37B5)";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -584,6 +588,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				PROVISIONING_PROFILE = "53CB0643-310E-4703-8938-EEB8FF80E849";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "53CB0643-310E-4703-8938-EEB8FF80E849";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -593,8 +599,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 0937ADEC2B47403CBF0CD0AD /* Pods.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Developer: Yavuz Selim YILMAZ (459NNU37B5)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Yavuz Selim YILMAZ (459NNU37B5)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Red Hat, Inc.";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Red Hat, Inc.";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/StaffRoster\"",
@@ -605,8 +611,8 @@
 				INFOPLIST_FILE = "StaffRoster/StaffRoster-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "BD58D8E1-A969-4842-A391-CAA58CC1301D";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "BD58D8E1-A969-4842-A391-CAA58CC1301D";
+				PROVISIONING_PROFILE = "0220B2C6-9665-4FA7-9F64-A03C2DD85FFD";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "0220B2C6-9665-4FA7-9F64-A03C2DD85FFD";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};
@@ -616,8 +622,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 0937ADEC2B47403CBF0CD0AD /* Pods.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Developer: Yavuz Selim YILMAZ (459NNU37B5)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Yavuz Selim YILMAZ (459NNU37B5)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Red Hat, Inc.";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Red Hat, Inc.";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/StaffRoster\"",
@@ -628,8 +634,8 @@
 				INFOPLIST_FILE = "StaffRoster/StaffRoster-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "BD58D8E1-A969-4842-A391-CAA58CC1301D";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "BD58D8E1-A969-4842-A391-CAA58CC1301D";
+				PROVISIONING_PROFILE = "0220B2C6-9665-4FA7-9F64-A03C2DD85FFD";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "0220B2C6-9665-4FA7-9F64-A03C2DD85FFD";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};

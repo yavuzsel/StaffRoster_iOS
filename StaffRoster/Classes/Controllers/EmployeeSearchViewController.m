@@ -38,6 +38,14 @@
     
     if (_pageType == kEmployeeSearchViewPageTypeSearch) {
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(popToRoot:)];
+    } else {
+        NSArray *viewControllers = self.navigationController.viewControllers;
+        if (viewControllers.count > 0) {
+            UIViewController *rootViewController = [viewControllers objectAtIndex:0];
+            if ([rootViewController isKindOfClass:[EmployeeSearchViewController class]]) {
+                self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(popToRoot:)];
+            }
+        }
     }
     
     _pageSubtypeSortTypeIsLocation = false;
@@ -511,7 +519,7 @@
     }
     
     /*
-     * well, i tried to round the top and bottom corners only, weird cell height changers (even if i set through heightforroatindexpath) is a problem
+     * well, i tried to round the top and bottom corners only, weird cell height changes (even if i set through heightforrowatindexpath) is a problem
      * UX decision: using it as it is.
      * <!--- leaving this for a better solution --->
      */

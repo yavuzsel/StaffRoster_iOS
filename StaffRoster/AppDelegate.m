@@ -45,7 +45,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
     
     UINavigationController *profileNavigation = [[UINavigationController alloc] initWithRootViewController:profileViewController];
     profileNavigation.navigationBar.tintColor = kAppTintColor;
-    profileNavigation.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"My Profile" image:[UIImage imageNamed:@"profile.png"] tag:0];//[[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemContacts tag:1];
+    profileNavigation.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"My Profile" image:[UIImage imageNamed:@"home.png"] tag:1];//[[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemContacts tag:1];
 
     
     UITabBarController *tabBarController = [[UITabBarController alloc] init];
@@ -157,6 +157,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
     
     // here if the badge icon is set, we know that a push message was arrived (as there is no delegate called if user simply ignores the notification, we can use this badge count as an indication of push message arrival)
+    
+    // !!!: push is inactive for this release...
 //    [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
 //    
 //    [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];

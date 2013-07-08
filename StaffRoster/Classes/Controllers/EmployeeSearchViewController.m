@@ -609,24 +609,32 @@
             // !!!: calling offline data provider each time costs a lot. get rid of it soon. (found a workaround for now - still need to lazy load the image url as scrolling for the first time still is not smooth enough)
             // !!!: if img_path does not exist on data provider, should i read from pipe?
             if (!([employee objectForKey:@"profile_image_path"] && [[employee objectForKey:@"profile_image_path"] length])) {
-                id img_path = [[OfflineDataProvider sharedInstance] getProfileImagePath:employee];
-                id employeeToUpdate = [employee mutableCopy];
-                if (img_path) {
-                    [employeeToUpdate setObject:img_path forKey:@"profile_image_path"];
-                } else {
-                    // !!!: a workaround for non-existing profile images. sdwebimage uses strict caching, means if url matches, it always uses the cached copy. so i can leverage on this for my workaround.
-                    // here i am NOT modifying the employee on the provider, just placeholding the image url for this VC
-                    [employeeToUpdate setObject:[NSString stringWithFormat:@"%@img/placeholder", kRESTfulBaseURL] forKey:@"profile_image_path"];
-                }
-                // !!!: modifying the data source? check if this is safe.
-                if (!_pageSubtypeSortTypeIsLocation) {
-                    [_employees replaceObjectAtIndex:row withObject:employeeToUpdate];
-                } else {
-                    [((RHLocation *)[locBasedSortResult objectAtIndex:(indexPath.section-1)]).employeeList replaceObjectAtIndex:row withObject:employeeToUpdate];
-                }
-                employee = employeeToUpdate;
+                [cell.imageView setImage:[UIImage imageNamed:@"StaffAppIcon_HiRes_v2.png"]];
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    id img_path = [[OfflineDataProvider sharedInstance] getProfileImagePath:employee];
+                    id employeeToUpdate = [employee mutableCopy];
+                    bool needsReload = false;
+                    if (img_path) {
+                        [employeeToUpdate setObject:img_path forKey:@"profile_image_path"];
+                        needsReload = true;
+                    } else {
+                        // !!!: a workaround for non-existing profile images. sdwebimage uses strict caching, means if url matches, it always uses the cached copy. so i can leverage on this for my workaround.
+                        // here i am NOT modifying the employee on the provider, just placeholding the image url for this VC
+                        [employeeToUpdate setObject:[NSString stringWithFormat:@"%@img/placeholder", kRESTfulBaseURL] forKey:@"profile_image_path"];
+                    }
+                    // !!!: modifying the data source? check if this is safe.
+                    if (!_pageSubtypeSortTypeIsLocation) {
+                        [_employees replaceObjectAtIndex:row withObject:employeeToUpdate];
+                    } else {
+                        [((RHLocation *)[locBasedSortResult objectAtIndex:(indexPath.section-1)]).employeeList replaceObjectAtIndex:row withObject:employeeToUpdate];
+                    }
+                    if (needsReload) {
+                        [self performSelectorOnMainThread:@selector(reloadRowAtIndexPathForProfileImage:) withObject:indexPath waitUntilDone:NO];
+                    }
+                });
+            } else {
+                [cell.imageView setImageWithURL:[NSURL URLWithString:[employee objectForKey:@"profile_image_path"]] placeholderImage:[UIImage imageNamed:@"profile_placeholder.png"]];
             }
-            [cell.imageView setImageWithURL:[NSURL URLWithString:[employee objectForKey:@"profile_image_path"]] placeholderImage:[UIImage imageNamed:@"StaffAppIcon_HiRes_v2.png"]];
             //[cell.imageView setImageWithURL:[NSURL URLWithString:[[OfflineDataProvider sharedInstance] getProfileImagePath:employee]] placeholderImage:[UIImage imageNamed:@"StaffAppIcon_HiRes_v2.png"]];
         } else {
             cell.detailTextLabel.text = nil;
@@ -634,6 +642,14 @@
     }
 //    NSLog(@"Cell Height: %f BG Height: %f", cell.bounds.size.height, cell.backgroundView.bounds.size.height);
     return cell;
+}
+
+- (void)reloadRowAtIndexPathForProfileImage:(NSIndexPath *)indexPath {
+    if ([self.tableView.indexPathsForVisibleRows containsObject:indexPath]) {
+        @synchronized(self){ // do i need this? check.
+            [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:NO];
+        }
+    }
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {

@@ -35,13 +35,14 @@ static NSString * const kStaffRosterAPIBaseURLString = kRESTfulBaseURL;
         // create the Pipeline object pointing to the remote application
         AGPipeline *pipeline = [AGPipeline pipelineWithBaseURL:[NSURL URLWithString:kStaffRosterAPIBaseURLString]];
         
+        bool isOfflineDataExists = [[OfflineDataProvider sharedInstance] isDataExist];
         // once pipeline is constructed setup the pipes that will
         // point to the remote application REST endpoints
         _employeesPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
             [config setName:@"employees"];
             [config setEndpoint:@"get_data_simple.php"];
-            if ([[OfflineDataProvider sharedInstance] isDataExist]) { // if data is sync (does not have to be up to date), don't hang too much to get the data from the pipe.
-                [config setTimeout:3];
+            if (isOfflineDataExists) { // if data is sync (does not have to be up to date), don't hang too much to get the data from the pipe.
+                [config setTimeout:1];
             }
         }];
         
@@ -49,24 +50,24 @@ static NSString * const kStaffRosterAPIBaseURLString = kRESTfulBaseURL;
         _managerPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
             [config setName:@"manager"];
             [config setEndpoint:@"get_manager.php"];
-            if ([[OfflineDataProvider sharedInstance] isDataExist]) {
-                [config setTimeout:3];
+            if (isOfflineDataExists) {
+                [config setTimeout:1];
             }
         }];
         
         _colleaguesPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
             [config setName:@"colleagues"];
             [config setEndpoint:@"get_colleagues.php"];
-            if ([[OfflineDataProvider sharedInstance] isDataExist]) {
-                [config setTimeout:3];
+            if (isOfflineDataExists) {
+                [config setTimeout:1];
             }
         }];
         
         _dreportsPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
             [config setName:@"dreports"];
             [config setEndpoint:@"get_dreports.php"];
-            if ([[OfflineDataProvider sharedInstance] isDataExist]) {
-                [config setTimeout:3];
+            if (isOfflineDataExists) {
+                [config setTimeout:1];
             }
         }];
         
@@ -85,6 +86,9 @@ static NSString * const kStaffRosterAPIBaseURLString = kRESTfulBaseURL;
         _imageURLPipe = [pipeline pipe:^(id<AGPipeConfig> config) {
             [config setName:@"image_url"];
             [config setEndpoint:@"get_image_url.php"];
+            if (isOfflineDataExists) {
+                [config setTimeout:3];
+            }
         }];        
     }
     

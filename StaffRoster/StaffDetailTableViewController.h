@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 
-@interface StaffDetailTableViewController : UITableViewController
+@interface StaffDetailTableViewController : UITableViewController <UIAlertViewDelegate>
 
 @property (strong) NSDictionary *employee;
 

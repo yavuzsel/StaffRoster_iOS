@@ -11,6 +11,7 @@
 #import "EmployeeSearchViewController.h"
 #import "OfflineDataProvider.h"
 #import <SDWebImage/UIImageView+WebCache.h>
+#import <SVProgressHUD.h>
 
 #define PROFILE_PHOTO_TAG 1
 #define PROFILE_NAME_TAG 2
@@ -27,9 +28,11 @@
 
 @implementation StaffDetailTableViewController {
     bool _load_mutex;
+    bool isCEO; // this is a quick last minute fix to disable manager button for CEO
     NSInteger _num_of_dreports;
     NSInteger _num_of_colleagues;
     NSString *_profile_img_path;
+    NSInteger _num_of_phonenumbers; // these fields might or might not exist, thats why we are counting.
 }
 
 @synthesize employee = _employee;
@@ -51,17 +54,27 @@
     _num_of_dreports = 0;
     _num_of_colleagues = 0;
     
+    // manager button goes down the list, so no bar button for manager load!!!
+    // manager button, for now!
+    /*UIButton *managerButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 49, 30)];
+    [managerButton setImage:[UIImage imageNamed:@"icon_manager.png"] forState:UIControlStateNormal];
+    [managerButton addTarget:self action:@selector(loadManager) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *managerBarButton = [[UIBarButtonItem alloc] initWithCustomView:managerButton];*/
+    // or alternatively
+    //UIBarButtonItem *managerBarButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"icon_manager.png"] style:UIBarButtonItemStylePlain target:self action:@selector(loadManager)];
+    
     // put search button if only root view is employee search view
     // TODO: once profile is introduced, implpement a better way to set page title
     NSArray *viewControllers = self.navigationController.viewControllers;
     if (viewControllers.count > 0) {
         UIViewController *rootViewController = [viewControllers objectAtIndex:0];
         if ([rootViewController isKindOfClass:[EmployeeSearchViewController class]]) {
-            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(popToRoot:)];
+            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(popToRoot:)];//self.navigationItem.rightBarButtonItems = [NSArray arrayWithObjects:[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(popToRoot:)], managerBarButton, nil];
             if (_employee) {
                 self.navigationItem.title = [[NSString alloc] initWithFormat:@"%@'s Profile", ([[_employee objectForKey:@"cn"] length]<7)?[_employee objectForKey:@"cn"]:[[[_employee objectForKey:@"cn"] componentsSeparatedByString:@" "] objectAtIndex:0]];
             }
         } else {
+            //self.navigationItem.rightBarButtonItem = managerBarButton;
             if ([viewControllers count] > 1) {
                 if (_employee) {
                     self.navigationItem.title = [[NSString alloc] initWithFormat:@"%@'s Profile", ([[_employee objectForKey:@"cn"] length]<7)?[_employee objectForKey:@"cn"]:[[[_employee objectForKey:@"cn"] componentsSeparatedByString:@" "] objectAtIndex:0]];
@@ -114,7 +127,21 @@
     self.tableView.backgroundView = tempImageView;
     
     if (!_employee) {
-        return;
+        return; // why do i get here? when profile is not loaded (for somehow)?
+    }
+    
+    if ([[_employee objectForKey:@"uid"] isEqual:@"jim"]) {
+        isCEO = true;
+    } else {
+        isCEO = false;
+    }
+    
+    _num_of_phonenumbers = 0; // this fields might or might not exist, thats why we are counting
+    if ([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length]) {
+        _num_of_phonenumbers++;
+    }
+    if ([_employee objectForKey:@"mobile"] && [_employee objectForKey:@"mobile"] != [NSNull null] && [[_employee objectForKey:@"mobile"] length]) {
+        _num_of_phonenumbers++;
     }
 
     // load number of direct reports and number of colleagues, no need to hold lock
@@ -138,8 +165,11 @@
         NSLog(@"An error has occured during read! \n%@", error);
         // i need to ask to data provider, because if employee was loaded from LDAP, then it'd not have image url
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            _profile_img_path = [[OfflineDataProvider sharedInstance] getProfileImagePath:_employee];
-            [self performSelectorOnMainThread:@selector(respondToProfileImageLoad) withObject:nil waitUntilDone:NO];
+            // this itself does not need to be syncronized, but during the execution, loading number of colleagues and/or dreports changes the number of sections and reloading the sections on tableview crashes the app
+            @synchronized(self){
+                _profile_img_path = [[OfflineDataProvider sharedInstance] getProfileImagePath:_employee];
+                [self performSelectorOnMainThread:@selector(respondToProfileImageLoad) withObject:nil waitUntilDone:YES];
+            }
         });
     }];
 }
@@ -159,8 +189,11 @@
     } failure:^(NSError *error) {
         NSLog(@"An error has occured during read! \n%@", error);
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            _num_of_dreports = [[OfflineDataProvider sharedInstance] getDReportsCount:[_employee objectForKey:@"cn"]];
-            [self performSelectorOnMainThread:@selector(respondToNumberOfDReportsLoad) withObject:nil waitUntilDone:NO];
+            // on multicore devices, not synchronizing this block interferes the return value of numberofsectionsintableview. so this block is sync and thread waits until refresh is done.
+            @synchronized(self){
+                _num_of_dreports = [[OfflineDataProvider sharedInstance] getDReportsCount:[_employee objectForKey:@"cn"]];
+                [self performSelectorOnMainThread:@selector(respondToNumberOfDReportsLoad) withObject:nil waitUntilDone:YES];
+            }
         });
     }];
 }
@@ -171,11 +204,7 @@
         return;
     }
     [self.tableView beginUpdates];
-    if ([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length]) {
-        [self.tableView insertSections:[NSIndexSet indexSetWithIndex:4] withRowAnimation:UITableViewRowAnimationFade];
-    } else {
-        [self.tableView insertSections:[NSIndexSet indexSetWithIndex:3] withRowAnimation:UITableViewRowAnimationFade];
-    }
+    [self.tableView insertSections:[NSIndexSet indexSetWithIndex:(3+_num_of_phonenumbers)] withRowAnimation:UITableViewRowAnimationFade];
     [self.tableView endUpdates];
 }
 
@@ -188,8 +217,11 @@
     } failure:^(NSError *error) {
         NSLog(@"An error has occured during read! \n%@", error);
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            _num_of_colleagues = [[OfflineDataProvider sharedInstance] getColleaguesCount:[_employee objectForKey:@"cn"]];
-            [self performSelectorOnMainThread:@selector(respondToNumberOfColleaguesLoad) withObject:nil waitUntilDone:NO];
+            // on multicore devices, not synchronizing this block interferes the return value of numberofsectionsintableview. so this block is sync and thread waits until refresh is done.
+            @synchronized(self){
+                _num_of_colleagues = [[OfflineDataProvider sharedInstance] getColleaguesCount:[_employee objectForKey:@"cn"]];
+                [self performSelectorOnMainThread:@selector(respondToNumberOfColleaguesLoad) withObject:nil waitUntilDone:YES];
+            }
         });
     }];
 }
@@ -200,18 +232,10 @@
         return;
     }
     [self.tableView beginUpdates];
-    if ([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length]) {
-        if (_num_of_dreports > 0) {
-            [self.tableView insertSections:[NSIndexSet indexSetWithIndex:5] withRowAnimation:UITableViewRowAnimationFade];
-        } else {
-            [self.tableView insertSections:[NSIndexSet indexSetWithIndex:4] withRowAnimation:UITableViewRowAnimationFade];
-        }
+    if (_num_of_dreports > 0) {
+        [self.tableView insertSections:[NSIndexSet indexSetWithIndex:(4+_num_of_phonenumbers)] withRowAnimation:UITableViewRowAnimationFade];
     } else {
-        if (_num_of_dreports > 0) {
-            [self.tableView insertSections:[NSIndexSet indexSetWithIndex:4] withRowAnimation:UITableViewRowAnimationFade];
-        } else {
-            [self.tableView insertSections:[NSIndexSet indexSetWithIndex:3] withRowAnimation:UITableViewRowAnimationFade];
-        }
+        [self.tableView insertSections:[NSIndexSet indexSetWithIndex:(3+_num_of_phonenumbers)] withRowAnimation:UITableViewRowAnimationFade];
     }
     [self.tableView endUpdates];
 }
@@ -289,6 +313,7 @@
 - (void)loadManager {
     // !!!: here i could use a "real" mutex, but not allowing to initiate a new request seems more reasonable than queueing the requests and waiting for the previous request to finish (applies to all fake mutex uses in this VC!)
     // should i ever call this as mutex (ambiguous)?
+    // with the help of the SVProgressHUD, i don't need this anymore. but still keeping if ever we decide not to use the SVProgressHUD
     if (!_load_mutex) {
         return;
     }
@@ -297,7 +322,7 @@
         _load_mutex = true;
         return;
     }
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    [SVProgressHUD showWithStatus:@"loading..." maskType:SVProgressHUDMaskTypeGradient];
     // fetch the data
     [[StaffRosterAPIClient sharedInstance].managerPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"manager": [_employee objectForKey:@"cn"]}] success:^(id responseObject) {
         [self respondToManagerLoad:responseObject];
@@ -313,8 +338,8 @@
 }
 
 - (void)respondToManagerLoad:(id)responseEmployee {
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     NSLog(@"Response manager: %@", responseEmployee);
+    [SVProgressHUD dismiss];
     // update table with the newly fetched data
     if ([responseEmployee count]) {
         CATransition* transition = [CATransition animation];
@@ -348,7 +373,7 @@
         _load_mutex = true;
         return;
     }
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    [SVProgressHUD showWithStatus:@"loading..." maskType:SVProgressHUDMaskTypeGradient];
     // fetch the data
     [[StaffRosterAPIClient sharedInstance].colleaguesPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"colleague": [_employee objectForKey:@"cn"]}] success:^(id responseObject) {
         [self respondToColleaguesLoad:responseObject withTransitionSubtype:transitionSubtype];
@@ -364,8 +389,8 @@
 }
 
 - (void)respondToColleaguesLoad:(id)responseObject withTransitionSubtype:(NSString *)subtype {
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     NSLog(@"Response colleagues: %@", responseObject);
+    [SVProgressHUD dismiss];
     if ([responseObject count]) {
         CATransition* transition = [CATransition animation];
         transition.duration = 0.4f;
@@ -403,7 +428,7 @@
         _load_mutex = true;
         return;
     }
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    [SVProgressHUD showWithStatus:@"loading..." maskType:SVProgressHUDMaskTypeGradient];
     // fetch the data
     [[StaffRosterAPIClient sharedInstance].dreportsPipe readWithParams:[[NSMutableDictionary alloc] initWithDictionary:@{@"dreport": [_employee objectForKey:@"cn"]}] success:^(id responseObject) {
         [self respondToDReportsLoad:responseObject withTransitionSubtype:transitionSubtype];
@@ -419,26 +444,36 @@
 }
 
 - (void)respondToDReportsLoad:(id)responseObject withTransitionSubtype:(NSString *)transitionSubtype {
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     NSLog(@"Response dreports: %@", responseObject);
-    CATransition* transition = [CATransition animation];
-    transition.duration = 0.4f;
-    transition.type = kCATransitionMoveIn;
-    transition.subtype = transitionSubtype;
-    [self.navigationController.view.layer addAnimation:transition
-                                                forKey:kCATransition];
-    EmployeeSearchViewController *detailViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStylePlain];
-    detailViewController.employees = responseObject;
-    detailViewController.titleName = [_employee objectForKey:@"cn"];
-    detailViewController.pageType = kEmployeeSearchViewPageTypeDReports;
-    /*[UIView animateWithDuration:0.75
-     animations:^{
-     [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-     [self.navigationController pushViewController:detailViewController animated:NO];
-     [UIView setAnimationTransition:UIViewAnimationTransitionCurlUp forView:self.navigationController.view cache:NO];
-     }];*/
-    [self.navigationController pushViewController:detailViewController animated:NO];
-    _load_mutex = true;
+    [SVProgressHUD dismiss];
+    if ([responseObject count]) {
+        CATransition* transition = [CATransition animation];
+        transition.duration = 0.4f;
+        transition.type = kCATransitionMoveIn;
+        transition.subtype = transitionSubtype;
+        [self.navigationController.view.layer addAnimation:transition
+                                                    forKey:kCATransition];
+        EmployeeSearchViewController *detailViewController = [[EmployeeSearchViewController alloc] initWithStyle:UITableViewStylePlain];
+        detailViewController.employees = responseObject;
+        detailViewController.titleName = [_employee objectForKey:@"cn"];
+        detailViewController.pageType = kEmployeeSearchViewPageTypeDReports;
+        /*[UIView animateWithDuration:0.75
+         animations:^{
+         [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+         [self.navigationController pushViewController:detailViewController animated:NO];
+         [UIView setAnimationTransition:UIViewAnimationTransitionCurlUp forView:self.navigationController.view cache:NO];
+         }];*/
+        [self.navigationController pushViewController:detailViewController animated:NO];
+        _load_mutex = true;
+    } else {
+        UIAlertView *message = [[UIAlertView alloc] initWithTitle:@"Oops!"
+                                                          message:@"No direct reports found..."
+                                                         delegate:nil
+                                                cancelButtonTitle:@"OK"
+                                                otherButtonTitles:nil];
+        [message show];
+        _load_mutex = true;
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -455,7 +490,10 @@
         return 0;
     }
     // Return the number of sections.
-    return (([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length])?4:3)+((_num_of_dreports>0)?1:0)+((_num_of_colleagues>0)?1:0);
+    if (isCEO) {
+            return 3+_num_of_phonenumbers+((_num_of_dreports>0)?1:0)+((_num_of_colleagues>0)?1:0);
+    }
+    return 4+_num_of_phonenumbers+((_num_of_dreports>0)?1:0)+((_num_of_colleagues>0)?1:0);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -505,15 +543,17 @@
     if (section == 0) {
         return 0.9f;
     }
-    if ([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length]) {
-        if (section == 2) {
-            return 2.0f;
-        }
-        if (_num_of_colleagues > 0 && _num_of_dreports > 0 && section == 4) {
+    if (section > 1 && section <= 1+_num_of_phonenumbers) {
+        return 2.0f;
+    }
+    if (isCEO) {
+        if (_num_of_colleagues > 0 && _num_of_dreports > 0 && section > 2+_num_of_phonenumbers && section <= 3+_num_of_phonenumbers) {
             return 2.0f;
         }
     } else {
-        if (_num_of_colleagues > 0 && _num_of_dreports > 0 && section == 3) {
+        if (_num_of_colleagues > 0 && _num_of_dreports > 0 && section > 2+_num_of_phonenumbers && section <= 4+_num_of_phonenumbers) {
+            return 2.0f;
+        } else if ((_num_of_colleagues > 0 || _num_of_dreports > 0) && section > 2+_num_of_phonenumbers && section <= 3+_num_of_phonenumbers) {
             return 2.0f;
         }
     }
@@ -524,15 +564,17 @@
     if (section == 1) {
         return 0.1f;
     }
-    if ([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length]) {
-        if (section == 3) {
-            return 2.0f;
-        }
-        if (_num_of_colleagues > 0 && _num_of_dreports > 0 && section == 5) {
+    if (section > 2 && section <= 2+_num_of_phonenumbers) {
+        return 2.0f;
+    }
+    if (isCEO) {
+        if (_num_of_colleagues > 0 && _num_of_dreports > 0 && section > 3+_num_of_phonenumbers && section <= 4+_num_of_phonenumbers) {
             return 2.0f;
         }
     } else {
-        if (_num_of_colleagues > 0 && _num_of_dreports > 0 && section == 4) {
+        if (_num_of_colleagues > 0 && _num_of_dreports > 0 && section > 3+_num_of_phonenumbers && section <= 5+_num_of_phonenumbers) {
+            return 2.0f;
+        } else if ((_num_of_colleagues > 0 || _num_of_dreports > 0) && section > 3+_num_of_phonenumbers && section <= 4+_num_of_phonenumbers) {
             return 2.0f;
         }
     }
@@ -593,7 +635,7 @@
             titleLabel = (UILabel *)[cell.contentView viewWithTag:PROFILE_TITLE_TAG];
         }
         cnLabel.text = [_employee objectForKey:@"cn"];
-        [prflPhoto setImageWithURL:[NSURL URLWithString:_profile_img_path] placeholderImage:[UIImage imageNamed:@"StaffAppIcon_HiRes_v2.png"]];
+        [prflPhoto setImageWithURL:[NSURL URLWithString:_profile_img_path] placeholderImage:[UIImage imageNamed:@"profile_img_placeholder.png"]];
         if([_employee objectForKey:@"title"] != [NSNull null] && [[_employee objectForKey:@"title"] length]) {
             titleLabel.text = [_employee objectForKey:@"title"];
         } else {
@@ -640,7 +682,7 @@
         return cell;
     }
     
-    if (_employee && (indexPath.section == 2 || (([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length]) && indexPath.section == 3))) {
+    if (_employee && (indexPath.section == 2 || (indexPath.section <= 2+_num_of_phonenumbers))) {
         static NSString *PPhotoRowCellIdentifier = @"PPhotoRowCell";
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:PPhotoRowCellIdentifier];
         UIImageView *rowPhoto;
@@ -682,9 +724,25 @@
         if (indexPath.section == 2) {
             clickableLabel.text = [_employee objectForKey:@"mail"];
             [rowPhoto setImage:[UIImage imageNamed:@"icon_email.png"]];
-        } else if (([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length]) && indexPath.section == 3) {
-            clickableLabel.text = [self formatPhoneNumber:[_employee objectForKey:@"telephonenumber"]];
-            [rowPhoto setImage:[UIImage imageNamed:@"icon_phone.png"]];
+        } else if(_num_of_phonenumbers == 2) {
+            if (indexPath.section == 3) {
+                clickableLabel.text = [self formatPhoneNumber:[_employee objectForKey:@"telephonenumber"]];
+                [rowPhoto setImage:[UIImage imageNamed:@"icon_phone.png"]];
+            } else if (indexPath.section == 4) {
+                NSLog(@"employee: %@", _employee);
+                clickableLabel.text = [self formatPhoneNumber:[_employee objectForKey:@"mobile"]];
+                [rowPhoto setImage:[UIImage imageNamed:@"icon_mobile.png"]];
+            }
+        } else if (_num_of_phonenumbers == 1) {
+            if (indexPath.section == 3) { // do i need this control?
+                if ([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length]) {
+                    clickableLabel.text = [self formatPhoneNumber:[_employee objectForKey:@"telephonenumber"]];
+                    [rowPhoto setImage:[UIImage imageNamed:@"icon_phone.png"]];
+                } else if ([_employee objectForKey:@"mobile"] && [_employee objectForKey:@"mobile"] != [NSNull null] && [[_employee objectForKey:@"mobile"] length]) {
+                    clickableLabel.text = [self formatPhoneNumber:[_employee objectForKey:@"mobile"]];
+                    [rowPhoto setImage:[UIImage imageNamed:@"icon_mobile.png"]];
+                }
+            }
         }
         
         // as the row is selectable, adjust the size of the textview
@@ -722,39 +780,51 @@
         mainLabel.text = @"ERROR";
         return cell;
     }
-    cell.accessoryType = UITableViewCellAccessoryNone;
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    
+    if (!isCEO && indexPath.section == tableView.numberOfSections-1) {
+        mainLabel.text = [[NSString alloc] initWithFormat:@"%@'s Manager", ([[_employee objectForKey:@"cn"] length]<7)?[_employee objectForKey:@"cn"]:[[[_employee objectForKey:@"cn"] componentsSeparatedByString:@" "] objectAtIndex:0]];
+        return cell;
+    }
     
     switch (indexPath.section) {
         case 3: {
             if (_num_of_dreports > 0) {
                 mainLabel.text =  [[NSString alloc] initWithFormat:@"%d direct report%@", _num_of_dreports, ((_num_of_dreports==1)?@"":@"s")];
-                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             } else if (_num_of_colleagues > 0) {
                 mainLabel.text =  [[NSString alloc] initWithFormat:@"%d peer%@", _num_of_colleagues, ((_num_of_colleagues==1)?@"":@"s")];
-                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             }
             break;
         }
             
         case 4: {
-            if ([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length]) {
+            if (_num_of_phonenumbers > 0) {
                 if (_num_of_dreports > 0) {
                     mainLabel.text =  [[NSString alloc] initWithFormat:@"%d direct report%@", _num_of_dreports, ((_num_of_dreports==1)?@"":@"s")];
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                 } else if (_num_of_colleagues > 0) {
                     mainLabel.text =  [[NSString alloc] initWithFormat:@"%d peer%@", _num_of_colleagues, ((_num_of_colleagues==1)?@"":@"s")];
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                 }
             } else {
                 mainLabel.text =  [[NSString alloc] initWithFormat:@"%d peer%@", _num_of_colleagues, ((_num_of_colleagues==1)?@"":@"s")];
-                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            }
+            break;
+        }
+            
+        case 5:{
+            if (_num_of_phonenumbers == 2) {
+                if (_num_of_dreports > 0) {
+                    mainLabel.text =  [[NSString alloc] initWithFormat:@"%d direct report%@", _num_of_dreports, ((_num_of_dreports==1)?@"":@"s")];
+                } else if (_num_of_colleagues > 0) {
+                    mainLabel.text =  [[NSString alloc] initWithFormat:@"%d peer%@", _num_of_colleagues, ((_num_of_colleagues==1)?@"":@"s")];
+                }
+            } else {
+                mainLabel.text =  [[NSString alloc] initWithFormat:@"%d peer%@", _num_of_colleagues, ((_num_of_colleagues==1)?@"":@"s")];
             }
             break;
         }
 
-        case 5:
+        case 6:
             mainLabel.text =  [[NSString alloc] initWithFormat:@"%d peer%@", _num_of_colleagues, ((_num_of_colleagues==1)?@"":@"s")];
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             break;
             
         default:
@@ -914,24 +984,46 @@
      [self.navigationController pushViewController:detailViewController animated:YES];
      */
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    if (indexPath.section == 5) {
+    if (!isCEO && indexPath.section == tableView.numberOfSections-1) {
+        [self loadManager];
+        return;
+    }
+    if (indexPath.section == 6) {
         [self loadColleagues:kCATransitionFromRight];
-    } else if (indexPath.section == 4) {
+    } else if (indexPath.section == 5) {
         if (_num_of_dreports == 0) {
             [self loadColleagues:kCATransitionFromRight];
         } else {
-            if ([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length]) {
+            if (_num_of_phonenumbers == 2) {
                 [self loadDReports:kCATransitionFromRight];
             } else {
                 [self loadColleagues:kCATransitionFromRight];
             }
         }
-    } else if (indexPath.section == 3) {
-        if (!([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length])) {
-            if (_num_of_dreports > 0) {
-                [self loadDReports:kCATransitionFromRight];
-            } else {
+    } else if (indexPath.section == 4) {
+        if (_num_of_phonenumbers == 2) {
+            [self dialPhoneNumber:[_employee objectForKey:@"mobile"]];
+        } else if (_num_of_phonenumbers == 1) {
+            if (_num_of_dreports == 0) {
                 [self loadColleagues:kCATransitionFromRight];
+            } else {
+                [self loadDReports:kCATransitionFromRight];
+            }
+        } else {
+            [self loadColleagues:kCATransitionFromRight];
+        }
+    } else if (indexPath.section == 3) {
+        if (_num_of_phonenumbers == 0) {
+            if (_num_of_dreports == 0) {
+                [self loadColleagues:kCATransitionFromRight];
+            } else {
+                [self loadDReports:kCATransitionFromRight];
+            }
+        } else if (_num_of_phonenumbers == 1) {
+            if ([_employee objectForKey:@"telephonenumber"] != [NSNull null] && [[_employee objectForKey:@"telephonenumber"] length]) {
+                [self dialPhoneNumber:[_employee objectForKey:@"telephonenumber"]];
+            } else {
+                [self dialPhoneNumber:[_employee objectForKey:@"mobile"]];
             }
         } else {
             [self dialPhoneNumber:[_employee objectForKey:@"telephonenumber"]];
@@ -946,9 +1038,21 @@
 }
 
 - (void)dialPhoneNumber:(NSString *)phoneNumber {
-    NSURL *phoneURL = [NSURL URLWithString:[NSString stringWithFormat:@"tel:%@",phoneNumber]];
+    UIAlertView *message = [[UIAlertView alloc] initWithTitle:nil
+                                                      message:[self formatPhoneNumber:phoneNumber]
+                                                     delegate:self
+                                            cancelButtonTitle:@"Cancel"
+                                            otherButtonTitles:@"Call", nil];
+    [message show];
+    /*NSURL *phoneURL = [NSURL URLWithString:[NSString stringWithFormat:@"tel://%@",phoneNumber]];
     UIWebView *phoneCallWebView = [[UIWebView alloc] initWithFrame:CGRectZero];
-    [phoneCallWebView loadRequest:[NSURLRequest requestWithURL:phoneURL]];
+    [phoneCallWebView loadRequest:[NSURLRequest requestWithURL:phoneURL]];*/
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (buttonIndex == 1) {
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tel://" stringByAppendingString:[[[alertView message] componentsSeparatedByCharactersInSet:[[NSCharacterSet characterSetWithCharactersInString:@"0123456789"] invertedSet]] componentsJoinedByString:@""]]]];
+    }
 }
 
 @end

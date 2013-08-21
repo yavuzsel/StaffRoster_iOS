@@ -1,5 +1,6 @@
 How to get the codes up and running?: <br /><br />
  
+ make sure you have cocoapods installed on your machine. (follow http://cocoapods.org/ for instructions)
   
 Step 1: $ git clone URL_TO_THIS_REPO <br />
 

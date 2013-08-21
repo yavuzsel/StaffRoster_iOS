@@ -2,14 +2,14 @@ How to get the codes up and running?: (works only on Mac OS) <br /><br />
  
 make sure you have cocoapods installed on your machine. (follow http://cocoapods.org/ for instructions)
   
-Step 1: $ git clone URL_TO_THIS_REPO <br />
+$> git clone URL_TO_THIS_REPO
 
-Step 2: $ cd StaffRoster_iOS <br />
+$> cd StaffRoster_iOS
 
-Step 3: $ pod update <br />
+$> pod update
 
-Step 4: Open StaffRoster.xcworkspace <br />
+Open StaffRoster.xcworkspace <br />
 
-Step 5: Update Constants.h with your info <br />
+Update Constants.h with your info <br />
 
-Step 6: Run (don't forget to select your provisioning profile) <br />
+Run (don't forget to select your provisioning profile)
